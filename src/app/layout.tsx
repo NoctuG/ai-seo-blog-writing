@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import config from '@/lib/config';
+import ThemeRegistry from '@/components/ThemeRegistry';
+import NavigationBar from '@/components/NavigationBar';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -54,32 +56,27 @@ export default function RootLayout({
   return (
     <html lang={config.site.language}>
       <body className={inter.className}>
-        <div className="min-h-screen flex flex-col">
-          <header className="border-b">
-            <nav className="container mx-auto px-4 py-4">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{config.site.name}</h1>
-                <div className="flex gap-4">
-                  <a href="/" className="hover:text-blue-600">首页</a>
-                  <a href="/generate" className="hover:text-blue-600">生成文章</a>
-                  <a href="/articles" className="hover:text-blue-600">文章列表</a>
-                  <a href="/tools" className="hover:text-blue-600">SEO工具</a>
-                </div>
-              </div>
-            </nav>
-          </header>
-
-          <main className="flex-1">
-            {children}
-          </main>
-
-          <footer className="border-t mt-auto">
-            <div className="container mx-auto px-4 py-6 text-center text-sm text-gray-600">
-              <p>&copy; {new Date().getFullYear()} {config.site.name}. All rights reserved.</p>
-              <p className="mt-2">AI驱动的SEO博客生成系统</p>
-            </div>
-          </footer>
-        </div>
+        <ThemeRegistry>
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <NavigationBar />
+            <main style={{ flex: 1 }}>
+              {children}
+            </main>
+            <footer style={{
+              borderTop: '1px solid #e0e0e0',
+              padding: '24px',
+              textAlign: 'center',
+              backgroundColor: '#fafafa',
+            }}>
+              <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+                &copy; {new Date().getFullYear()} {config.site.name}. All rights reserved.
+              </p>
+              <p style={{ margin: '8px 0 0', color: '#888', fontSize: '12px' }}>
+                AI驱动的SEO博客生成系统
+              </p>
+            </footer>
+          </div>
+        </ThemeRegistry>
       </body>
     </html>
   );

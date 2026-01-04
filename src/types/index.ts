@@ -4,6 +4,7 @@ export type AIProvider = 'claude' | 'openai';
 export interface AIConfig {
   provider: AIProvider;
   apiKey: string;
+  baseUrl?: string;
   model?: string;
 }
 

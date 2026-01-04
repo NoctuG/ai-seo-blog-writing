@@ -7,6 +7,7 @@ export class ClaudeProvider {
 
   constructor(aiConfig?: AIConfig) {
     const apiKey = aiConfig?.apiKey || config.ai.anthropic.apiKey;
+    const baseUrl = aiConfig?.baseUrl || config.ai.anthropic.baseUrl;
 
     if (!apiKey) {
       throw new Error('Claude API key is required');
@@ -14,6 +15,7 @@ export class ClaudeProvider {
 
     this.client = new Anthropic({
       apiKey,
+      ...(baseUrl && { baseURL: baseUrl }),
     });
   }
 

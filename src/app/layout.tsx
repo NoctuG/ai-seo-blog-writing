@@ -67,6 +67,9 @@ export default function RootLayout({
                   <a href="/generate-advanced" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all font-medium">
                     高级生成器
                   </a>
+                  <a href="/editor/new" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+                    ✏️ 编辑器
+                  </a>
                   <a href="/articles" className="hover:text-blue-600 transition-colors">文章列表</a>
                 </div>
               </div>

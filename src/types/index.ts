@@ -8,6 +8,9 @@ export interface AIConfig {
 }
 
 // Article Types
+export type ArticleStatus = 'draft' | 'review' | 'published';
+export type SchemaType = 'Article' | 'BlogPosting' | 'NewsArticle' | 'Review' | 'HowTo' | 'FAQ';
+
 export interface Article {
   id: string;
   title: string;
@@ -15,10 +18,12 @@ export interface Article {
   description: string;
   content: string;
   keywords: string[];
+  focusKeyword?: string;
   coverImage?: string;
   author?: string;
   publishDate: string;
   lastModified: string;
+  status?: ArticleStatus;
   category?: string;
   tags?: string[];
   metadata: ArticleMetadata;
@@ -30,7 +35,31 @@ export interface ArticleMetadata {
   metaDescription: string;
   ogImage?: string;
   schema?: Record<string, any>;
+  schemaType?: SchemaType;
   canonicalUrl?: string;
+  robotsIndex?: boolean;
+  robotsFollow?: boolean;
+}
+
+// SEO Checklist Types
+export interface SEOChecklistItem {
+  id: string;
+  label: string;
+  status: 'pass' | 'warning' | 'fail';
+  message?: string;
+}
+
+export interface SEOChecklist {
+  h1Unique: SEOChecklistItem;
+  titleLength: SEOChecklistItem;
+  descriptionLength: SEOChecklistItem;
+  keywordInTitle: SEOChecklistItem;
+  keywordInDescription: SEOChecklistItem;
+  keywordDensity: SEOChecklistItem;
+  imageAltTags: SEOChecklistItem;
+  internalLinks: SEOChecklistItem;
+  externalLinks: SEOChecklistItem;
+  contentLength: SEOChecklistItem;
 }
 
 // Content Generation Types

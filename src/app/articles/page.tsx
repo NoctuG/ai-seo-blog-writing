@@ -12,9 +12,17 @@ export default async function ArticlesPage() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">文章列表</h1>
-          <p className="text-gray-600">共 {articles.length} 篇文章</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">文章列表</h1>
+            <p className="text-gray-600">共 {articles.length} 篇文章</p>
+          </div>
+          <Link
+            href="/editor/new"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+          >
+            ✏️ 新建文章
+          </Link>
         </div>
 
         {articles.length === 0 ? (
@@ -28,11 +36,20 @@ export default async function ArticlesPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.map((article) => (
               <article key={article.id} className="card hover:shadow-lg transition-shadow">
-                <Link href={`/articles/${article.slug}`}>
-                  <h2 className="text-xl font-bold mb-2 hover:text-blue-600">
-                    {article.title}
-                  </h2>
-                </Link>
+                <div className="flex items-start justify-between mb-3">
+                  <Link href={`/articles/${article.slug}`} className="flex-1">
+                    <h2 className="text-xl font-bold hover:text-blue-600">
+                      {article.title}
+                    </h2>
+                  </Link>
+                  <Link
+                    href={`/editor/${article.id}`}
+                    className="text-gray-400 hover:text-blue-600 transition-colors ml-2"
+                    title="编辑文章"
+                  >
+                    ✏️
+                  </Link>
+                </div>
 
                 <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                   {article.description}
@@ -46,10 +63,26 @@ export default async function ArticlesPage() {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between text-sm text-gray-500">
+                <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
                   <span>{formatDate(article.publishDate)}</span>
                   <span>{estimateReadingTime(article.content)} 分钟阅读</span>
                 </div>
+
+                {article.status && (
+                  <div className="mb-3">
+                    <span
+                      className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                        article.status === 'published'
+                          ? 'bg-green-100 text-green-800'
+                          : article.status === 'review'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {article.status === 'published' ? '已发布' : article.status === 'review' ? '待审核' : '草稿'}
+                    </span>
+                  </div>
+                )}
 
                 {article.seoScore && (
                   <div className="mt-4 pt-4 border-t">

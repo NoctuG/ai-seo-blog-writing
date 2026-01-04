@@ -48,8 +48,12 @@ export class AIService {
     return this.provider.improveContent(content, improvements);
   }
 
-  async generateText(prompt: string, systemPrompt?: string): Promise<string> {
-    return this.provider.generateText(prompt, systemPrompt);
+  async generateText(
+    prompt: string,
+    systemPrompt?: string,
+    options?: { connectToWeb?: boolean }
+  ): Promise<string> {
+    return this.provider.generateText(prompt, systemPrompt, options);
   }
 }
 

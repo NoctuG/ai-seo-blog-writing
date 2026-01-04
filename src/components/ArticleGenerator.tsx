@@ -11,11 +11,35 @@ export default function ArticleGenerator() {
     tone: 'professional',
     length: 'medium',
     language: 'zh-CN',
+    cms: {
+      provider: 'wordpress',
+      siteUrl: '',
+      username: '',
+      applicationPassword: '',
+      defaultStatus: 'draft',
+      defaultCategory: '',
+      defaultTags: [],
+    },
+    social: {
+      twitter: {
+        enabled: false,
+        handle: '',
+        hashtags: [],
+      },
+      facebook: {
+        enabled: false,
+        handle: '',
+        hashtags: [],
+      },
+    },
     includeImages: true,
     includeFacts: true,
   });
 
   const [keywordInput, setKeywordInput] = useState('');
+  const [cmsTagsInput, setCmsTagsInput] = useState('');
+  const [twitterHashtagsInput, setTwitterHashtagsInput] = useState('');
+  const [facebookHashtagsInput, setFacebookHashtagsInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
@@ -34,6 +58,57 @@ export default function ArticleGenerator() {
     setFormData({
       ...formData,
       keywords: formData.keywords.filter(k => k !== keyword),
+    });
+  };
+
+  const updateCmsTags = (value: string) => {
+    setCmsTagsInput(value);
+    const tags = value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean);
+    setFormData({
+      ...formData,
+      cms: {
+        ...formData.cms,
+        defaultTags: tags,
+      },
+    });
+  };
+
+  const updateTwitterHashtags = (value: string) => {
+    setTwitterHashtagsInput(value);
+    const hashtags = value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean);
+    setFormData({
+      ...formData,
+      social: {
+        ...formData.social,
+        twitter: {
+          ...formData.social?.twitter,
+          hashtags,
+        },
+      },
+    });
+  };
+
+  const updateFacebookHashtags = (value: string) => {
+    setFacebookHashtagsInput(value);
+    const hashtags = value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean);
+    setFormData({
+      ...formData,
+      social: {
+        ...formData.social,
+        facebook: {
+          ...formData.social?.facebook,
+          hashtags,
+        },
+      },
     });
   };
 
@@ -184,6 +259,233 @@ export default function ArticleGenerator() {
             />
             <span className="text-sm">嵌入事实和证据</span>
           </label>
+        </div>
+
+        {/* CMS Config */}
+        <div className="space-y-4 rounded-lg border border-gray-200 p-4">
+          <h4 className="text-sm font-semibold text-gray-700">CMS 配置（WordPress）</h4>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              站点地址
+            </label>
+            <input
+              type="url"
+              value={formData.cms?.siteUrl || ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  cms: {
+                    ...formData.cms,
+                    siteUrl: e.target.value,
+                  },
+                })
+              }
+              className="input"
+              placeholder="https://example.com"
+            />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                用户名
+              </label>
+              <input
+                type="text"
+                value={formData.cms?.username || ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    cms: {
+                      ...formData.cms,
+                      username: e.target.value,
+                    },
+                  })
+                }
+                className="input"
+                placeholder="wordpress-user"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Application Password
+              </label>
+              <input
+                type="password"
+                value={formData.cms?.applicationPassword || ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    cms: {
+                      ...formData.cms,
+                      applicationPassword: e.target.value,
+                    },
+                  })
+                }
+                className="input"
+                placeholder="xxxx xxxx xxxx xxxx"
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                默认发布状态
+              </label>
+              <select
+                value={formData.cms?.defaultStatus || 'draft'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    cms: {
+                      ...formData.cms,
+                      defaultStatus: e.target.value as any,
+                    },
+                  })
+                }
+                className="input"
+              >
+                <option value="draft">草稿</option>
+                <option value="publish">发布</option>
+                <option value="private">私有</option>
+                <option value="pending">待审核</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                默认分类
+              </label>
+              <input
+                type="text"
+                value={formData.cms?.defaultCategory || ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    cms: {
+                      ...formData.cms,
+                      defaultCategory: e.target.value,
+                    },
+                  })
+                }
+                className="input"
+                placeholder="内容营销"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              默认标签（逗号分隔）
+            </label>
+            <input
+              type="text"
+              value={cmsTagsInput}
+              onChange={(e) => updateCmsTags(e.target.value)}
+              className="input"
+              placeholder="AI, 内容营销, SEO"
+            />
+          </div>
+        </div>
+
+        {/* Social Config */}
+        <div className="space-y-4 rounded-lg border border-gray-200 p-4">
+          <h4 className="text-sm font-semibold text-gray-700">社交媒体文案配置</h4>
+          <div className="space-y-4">
+            <div className="rounded-md border border-gray-100 p-3">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  checked={formData.social?.twitter?.enabled || false}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social: {
+                        ...formData.social,
+                        twitter: {
+                          ...formData.social?.twitter,
+                          enabled: e.target.checked,
+                        },
+                      },
+                    })
+                  }
+                />
+                Twitter
+              </label>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <input
+                  type="text"
+                  value={formData.social?.twitter?.handle || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social: {
+                        ...formData.social,
+                        twitter: {
+                          ...formData.social?.twitter,
+                          handle: e.target.value,
+                        },
+                      },
+                    })
+                  }
+                  className="input"
+                  placeholder="@brand"
+                />
+                <input
+                  type="text"
+                  value={twitterHashtagsInput}
+                  onChange={(e) => updateTwitterHashtags(e.target.value)}
+                  className="input"
+                  placeholder="话题标签（逗号分隔）"
+                />
+              </div>
+            </div>
+            <div className="rounded-md border border-gray-100 p-3">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  checked={formData.social?.facebook?.enabled || false}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social: {
+                        ...formData.social,
+                        facebook: {
+                          ...formData.social?.facebook,
+                          enabled: e.target.checked,
+                        },
+                      },
+                    })
+                  }
+                />
+                Facebook
+              </label>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <input
+                  type="text"
+                  value={formData.social?.facebook?.handle || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social: {
+                        ...formData.social,
+                        facebook: {
+                          ...formData.social?.facebook,
+                          handle: e.target.value,
+                        },
+                      },
+                    })
+                  }
+                  className="input"
+                  placeholder="@brand"
+                />
+                <input
+                  type="text"
+                  value={facebookHashtagsInput}
+                  onChange={(e) => updateFacebookHashtags(e.target.value)}
+                  className="input"
+                  placeholder="话题标签（逗号分隔）"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Error */}

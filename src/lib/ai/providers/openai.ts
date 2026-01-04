@@ -49,6 +49,7 @@ export class OpenAIProvider {
       length?: string;
       language?: string;
       brandInfo?: any;
+      connectToWeb?: boolean;
     } = {}
   ): Promise<string> {
     const systemPrompt = `你是一个专业的SEO内容写作专家。你的任务是创建高质量、SEO优化的博客文章。
@@ -106,7 +107,7 @@ ${options.brandInfo ? `品牌信息：
     return this.generateText(prompt, systemPrompt);
   }
 
-  async analyzeSERP(keyword: string): Promise<any> {
+  async analyzeSERP(keyword: string, _options?: { connectToWeb?: boolean }): Promise<any> {
     const systemPrompt = '你是一个SEO分析专家，擅长分析搜索引擎结果页面（SERP）和用户搜索意图。';
 
     const prompt = `请分析关键词 "${keyword}" 的搜索意图和内容策略：

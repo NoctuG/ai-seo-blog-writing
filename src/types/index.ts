@@ -46,6 +46,7 @@ export interface ContentGenerationRequest {
   social?: SocialConfig;
   includeImages?: boolean;
   includeFacts?: boolean;
+  connectToWeb?: boolean;
 }
 
 export interface BrandInfo {

@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
       length: body.length,
       language: body.language,
       brandInfo: body.brandInfo,
+      connectToWeb: body.connectToWeb,
     });
 
     // Extract title from content (first H1)
@@ -149,9 +150,11 @@ export async function POST(request: NextRequest) {
 
     // Optionally analyze SERP for the main keyword
     let serpAnalysis;
-    if (body.keywords.length > 0) {
+    if (body.connectToWeb && body.keywords.length > 0) {
       try {
-        serpAnalysis = await aiService.analyzeSERP(body.keywords[0]);
+        serpAnalysis = await aiService.analyzeSERP(body.keywords[0], {
+          connectToWeb: body.connectToWeb,
+        });
       } catch (error) {
         console.error('SERP analysis failed:', error);
       }

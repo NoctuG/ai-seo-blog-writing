@@ -34,6 +34,7 @@ export default function ArticleGenerator() {
     },
     includeImages: true,
     includeFacts: true,
+    connectToWeb: false,
   });
 
   const [keywordInput, setKeywordInput] = useState('');
@@ -258,6 +259,14 @@ export default function ArticleGenerator() {
               onChange={(e) => setFormData({ ...formData, includeFacts: e.target.checked })}
             />
             <span className="text-sm">嵌入事实和证据</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.connectToWeb}
+              onChange={(e) => setFormData({ ...formData, connectToWeb: e.target.checked })}
+            />
+            <span className="text-sm">Connect to Web</span>
           </label>
         </div>
 

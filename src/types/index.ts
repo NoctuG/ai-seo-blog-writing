@@ -44,6 +44,7 @@ export interface ContentGenerationRequest {
   brandInfo?: BrandInfo;
   includeImages?: boolean;
   includeFacts?: boolean;
+  connectToWeb?: boolean;
 }
 
 export interface BrandInfo {

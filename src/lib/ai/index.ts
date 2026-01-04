@@ -34,13 +34,14 @@ export class AIService {
         products?: string[];
         values?: string[];
       };
+      connectToWeb?: boolean;
     } = {}
   ): Promise<string> {
     return this.provider.generateArticle(topic, keywords, options);
   }
 
-  async analyzeSERP(keyword: string): Promise<any> {
-    return this.provider.analyzeSERP(keyword);
+  async analyzeSERP(keyword: string, options?: { connectToWeb?: boolean }): Promise<any> {
+    return this.provider.analyzeSERP(keyword, options);
   }
 
   async improveContent(content: string, improvements: string[]): Promise<string> {

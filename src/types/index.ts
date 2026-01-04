@@ -42,6 +42,8 @@ export interface ContentGenerationRequest {
   length?: 'short' | 'medium' | 'long';
   language?: string;
   brandInfo?: BrandInfo;
+  cms?: CMSConfig;
+  social?: SocialConfig;
   includeImages?: boolean;
   includeFacts?: boolean;
 }
@@ -57,6 +59,55 @@ export interface ContentGenerationResult {
   article: Article;
   suggestions: string[];
   serpAnalysis?: SERPAnalysis;
+  cmsPayload?: CMSPayload;
+  socialCopy?: SocialCopy;
+}
+
+export interface CMSConfig {
+  provider: 'wordpress';
+  siteUrl?: string;
+  username?: string;
+  applicationPassword?: string;
+  defaultStatus?: 'draft' | 'publish' | 'private' | 'pending';
+  defaultCategory?: string;
+  defaultTags?: string[];
+}
+
+export interface CMSPayload {
+  provider: 'wordpress';
+  endpoint?: string;
+  post: {
+    title: string;
+    content: string;
+    excerpt: string;
+    status: 'draft' | 'publish' | 'private' | 'pending';
+    slug: string;
+    categories?: string[];
+    tags?: string[];
+  };
+}
+
+export interface SocialConfig {
+  twitter?: SocialChannelConfig;
+  facebook?: SocialChannelConfig;
+}
+
+export interface SocialChannelConfig {
+  enabled?: boolean;
+  handle?: string;
+  hashtags?: string[];
+  language?: string;
+}
+
+export interface SocialCopy {
+  twitter?: SocialCopyItem;
+  facebook?: SocialCopyItem;
+}
+
+export interface SocialCopyItem {
+  text: string;
+  hashtags?: string[];
+  url?: string;
 }
 
 // SERP Analysis Types

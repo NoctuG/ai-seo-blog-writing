@@ -5,6 +5,77 @@ import { MetadataGenerator } from '@/lib/seo/metadata';
 import { generateSlug, generateArticleId, saveArticle } from '@/utils/article';
 import { Article, ContentGenerationRequest } from '@/types';
 
+const normalizeBaseUrl = (url?: string) => url?.replace(/\/+$/, '');
+
+const buildCmsPayload = (article: Article, body: ContentGenerationRequest) => {
+  const cms = body.cms;
+  const baseUrl = normalizeBaseUrl(cms?.siteUrl);
+  const endpoint = baseUrl ? `${baseUrl}/wp-json/wp/v2/posts` : undefined;
+  const status = cms?.defaultStatus ?? 'draft';
+
+  return {
+    provider: 'wordpress' as const,
+    endpoint,
+    post: {
+      title: article.title,
+      content: article.content,
+      excerpt: article.description,
+      status,
+      slug: article.slug,
+      categories: cms?.defaultCategory ? [cms.defaultCategory] : undefined,
+      tags: cms?.defaultTags && cms.defaultTags.length > 0 ? cms.defaultTags : undefined,
+    },
+  };
+};
+
+const buildSocialText = ({
+  title,
+  description,
+  handle,
+}: {
+  title: string;
+  description: string;
+  handle?: string;
+}) => {
+  const handleText = handle ? ` ${handle}` : '';
+  return `${title} - ${description}${handleText}`.trim();
+};
+
+const buildSocialCopy = (
+  article: Article,
+  body: ContentGenerationRequest
+) => {
+  const baseUrl = normalizeBaseUrl(body.cms?.siteUrl);
+  const articleUrl = baseUrl ? `${baseUrl}/${article.slug}` : undefined;
+  const twitter = body.social?.twitter;
+  const facebook = body.social?.facebook;
+
+  return {
+    twitter: twitter?.enabled
+      ? {
+          text: buildSocialText({
+            title: article.title,
+            description: article.description,
+            handle: twitter.handle,
+          }),
+          hashtags: twitter.hashtags,
+          url: articleUrl,
+        }
+      : undefined,
+    facebook: facebook?.enabled
+      ? {
+          text: buildSocialText({
+            title: article.title,
+            description: article.description,
+            handle: facebook.handle,
+          }),
+          hashtags: facebook.hashtags,
+          url: articleUrl,
+        }
+      : undefined,
+  };
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body: ContentGenerationRequest = await request.json();
@@ -86,10 +157,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const cmsPayload = buildCmsPayload(article, body);
+    const socialCopy = buildSocialCopy(article, body);
+
     return NextResponse.json({
       article,
       suggestions,
       serpAnalysis,
+      cmsPayload,
+      socialCopy,
     });
   } catch (error) {
     console.error('Generation error:', error);

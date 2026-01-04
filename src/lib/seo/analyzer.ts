@@ -270,20 +270,23 @@ export class SEOAnalyzer {
    * Helper: Count links
    */
   private countLinks(content: string, type: 'internal' | 'external'): number {
-    const linkRegex = /\[.*?\]\((https?:\/\/[^\)]+)\)/g;
-    const matches = content.match(linkRegex) || [];
+    // Match all markdown links (both with and without protocols)
+    const linkRegex = /\[.*?\]\(([^\)]+)\)/g;
+    const matches = Array.from(content.matchAll(linkRegex));
 
     if (type === 'external') {
-      return matches.filter(link =>
-        link.includes('http://') || link.includes('https://')
-      ).length;
+      // External links have http:// or https://
+      return matches.filter(match => {
+        const url = match[1];
+        return url.startsWith('http://') || url.startsWith('https://');
+      }).length;
     }
 
-    // For internal links, we'd need to check against the site domain
-    // For now, assume links without http/https are internal
-    return matches.filter(link =>
-      !link.includes('http://') && !link.includes('https://')
-    ).length;
+    // For internal links, assume links without http/https are internal
+    return matches.filter(match => {
+      const url = match[1];
+      return !url.startsWith('http://') && !url.startsWith('https://');
+    }).length;
   }
 
   /**

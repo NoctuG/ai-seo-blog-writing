@@ -67,11 +67,13 @@ cp .env.example .env
 编辑 `.env` 文件：
 
 ```env
-# 至少配置一个AI API密钥
-ANTHROPIC_API_KEY=your_claude_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
+# AI API Keys
+AI_API_KEY=your_api_key_here
 
-# 选择默认AI服务 (claude 或 openai)
+# AI Base URLs (可选，用于自定义API端点)
+AI_BASE_URL=
+
+# AI Service Selection (claude  或其他)
 DEFAULT_AI_SERVICE=claude
 
 # 站点配置

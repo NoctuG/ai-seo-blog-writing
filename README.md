@@ -2,6 +2,11 @@
 
 AI驱动的SEO博客生成系统 - 自动生成高质量、SEO优化的博客文章
 
+## 🚀 一键部署
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/ai-seo-blog-writing)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/your-username/ai-seo-blog-writing)
+
 ## ✨ 主要功能
 
 ### 轻松生成高质量文章

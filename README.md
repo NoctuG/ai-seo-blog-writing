@@ -28,4 +28,3 @@
 1. 用户友好文章编辑器: 通过支持富媒体和代码嵌入的直观编辑器，创建结构合理、引人入胜的内容。
 2. 搜索引擎集成: 确保您的博客能被Google、Bing和Yandex等主要搜索引擎发现。
 3. 社交媒体内容分发: 无缝分享您的博客文章到Facebook、Twitter和LinkedIn等热门社交媒体平台。
-4. 轻量化部署: 支持Vercel、Netlify和Cloudflare Pages，符合HTML5和PWA要求。

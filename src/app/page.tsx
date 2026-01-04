@@ -12,12 +12,18 @@ export default function Home() {
           <p className="text-xl text-gray-600 mb-8">
             AI驱动的内容生成，自动SEO优化，让您的博客脱颖而出
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/generate"
               className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
             >
               开始生成文章
+            </Link>
+            <Link
+              href="/editor"
+              className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+            >
+              打开SEO编辑器
             </Link>
             <Link
               href="/articles"

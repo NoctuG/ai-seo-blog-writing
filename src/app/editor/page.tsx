@@ -1,16 +1,30 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 const WORDS_PER_MINUTE = 220;
 const TITLE_MAX = 60;
 const META_MIN = 120;
 const META_MAX = 160;
+const META_TARGET = 150;
 
 type SidebarTab = 'settings' | 'seo' | 'audit';
 
 type ArticleStatus = 'draft' | 'review' | 'published';
+
+type AuditSnapshot = {
+  hasH1: boolean;
+  hasMeta: boolean;
+  hasImages: boolean;
+  hasInternalLinks: boolean;
+  hasExternalLinks: boolean;
+  keywordMentions: number;
+  keywordDensity: string;
+  keywordInTitle: boolean;
+  keywordInIntro: boolean;
+  score: number;
+};
 
 function countWords(value: string) {
   const trimmed = value.trim();
@@ -44,22 +58,93 @@ export default function EditorPage() {
   const [author, setAuthor] = useState('');
   const [publishDate, setPublishDate] = useState('');
   const [featuredAlt, setFeaturedAlt] = useState('');
+  const [imageSource, setImageSource] = useState('');
   const [categories, setCategories] = useState('');
   const [tags, setTags] = useState('');
+  const [structuredEnabled, setStructuredEnabled] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showPublishWarning, setShowPublishWarning] = useState(false);
+  const [showImproveTips, setShowImproveTips] = useState(false);
+  const [auditSnapshot, setAuditSnapshot] = useState<AuditSnapshot>({
+    hasH1: false,
+    hasMeta: false,
+    hasImages: false,
+    hasInternalLinks: false,
+    hasExternalLinks: false,
+    keywordMentions: 0,
+    keywordDensity: '0.00',
+    keywordInTitle: false,
+    keywordInIntro: false,
+    score: 0,
+  });
 
   const wordCount = useMemo(() => countWords(content), [content]);
   const readMinutes = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
   const titleCount = metaTitle.length;
   const metaCount = metaDescription.length;
-  const keywordMentions = focusKeyword
-    ? (content.toLowerCase().match(new RegExp(focusKeyword.toLowerCase(), 'g')) || []).length
-    : 0;
-  const keywordDensity = wordCount > 0 ? ((keywordMentions / wordCount) * 100).toFixed(2) : '0.00';
   const hasH1 = title.trim().length > 0;
   const hasMeta = metaDescription.trim().length > 0;
-  const hasImages = /<img|!\[.*\]\(.*\)/.test(content);
-  const hasInternalLinks = /\[[^\]]+\]\((\/[^)]+)\)/.test(content);
-  const hasExternalLinks = /\[[^\]]+\]\((https?:\/\/[^)]+)\)/.test(content);
+  const slugHasInvalid = /[^a-z0-9-]/i.test(slug);
+  const metaProgress = Math.min(100, (metaCount / META_TARGET) * 100);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      const keywordMentions = focusKeyword
+        ? (content.toLowerCase().match(new RegExp(focusKeyword.toLowerCase(), 'g')) || []).length
+        : 0;
+      const keywordDensity = wordCount > 0 ? ((keywordMentions / wordCount) * 100).toFixed(2) : '0.00';
+      const hasImages = /<img|!\[.*\]\(.*\)/.test(content);
+      const hasInternalLinks = /\[[^\]]+\]\((\/[^)]+)\)/.test(content);
+      const hasExternalLinks = /\[[^\]]+\]\((https?:\/\/[^)]+)\)/.test(content);
+      const keywordInTitle = focusKeyword
+        ? title.toLowerCase().includes(focusKeyword.toLowerCase())
+        : false;
+      const intro = content.split(/\n\n|\r\n\r\n/)[0] ?? '';
+      const keywordInIntro = focusKeyword
+        ? intro.toLowerCase().includes(focusKeyword.toLowerCase())
+        : false;
+      const checks = [
+        hasH1,
+        hasMeta,
+        hasImages,
+        hasInternalLinks,
+        hasExternalLinks,
+        Number(keywordDensity) > 0.5,
+        keywordInTitle,
+        keywordInIntro,
+      ];
+      const score = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+      setAuditSnapshot({
+        hasH1,
+        hasMeta,
+        hasImages,
+        hasInternalLinks,
+        hasExternalLinks,
+        keywordMentions,
+        keywordDensity,
+        keywordInTitle,
+        keywordInIntro,
+        score,
+      });
+    }, 500);
+
+    return () => window.clearTimeout(handle);
+  }, [content, focusKeyword, hasH1, hasMeta, title, wordCount]);
+
+  const handleGenerateMeta = () => {
+    if (!content.trim()) {
+      return;
+    }
+    const text = content.replace(/\n+/g, ' ').trim();
+    setMetaDescription(text.slice(0, META_MAX));
+  };
+
+  const handlePublish = () => {
+    if (!hasH1 || !hasMeta) {
+      setShowPublishWarning(true);
+      return;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -82,10 +167,16 @@ export default function EditorPage() {
             <button className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100">
               移动预览
             </button>
-            <button className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100">
+            <button
+              onClick={() => setShowImproveTips((prev) => !prev)}
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+            >
               改进
             </button>
-            <button className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+            <button
+              onClick={handlePublish}
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            >
               发布 / 导出
             </button>
             <button className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100">
@@ -116,15 +207,28 @@ export default function EditorPage() {
             />
           </div>
           <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-            <span>关键字密度：{keywordDensity}%</span>
-            <span>内链 {hasInternalLinks ? '已添加' : '缺失'}</span>
-            <span>外链 {hasExternalLinks ? '已添加' : '缺失'}</span>
-            <span>图片 {hasImages ? '已插入' : '未插入'}</span>
+            <span>关键字密度：{auditSnapshot.keywordDensity}%</span>
+            <span>内链 {auditSnapshot.hasInternalLinks ? '已添加' : '缺失'}</span>
+            <span>外链 {auditSnapshot.hasExternalLinks ? '已添加' : '缺失'}</span>
+            <span>图片 {auditSnapshot.hasImages ? '已插入' : '未插入'}</span>
           </div>
         </section>
 
         <aside className="space-y-4">
-          <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-2 text-sm font-medium text-slate-600 xl:hidden">
+            <span>智能侧边栏</span>
+            <button
+              onClick={() => setSidebarCollapsed((prev) => !prev)}
+              className="rounded-lg border border-slate-200 px-3 py-1 text-xs text-slate-500"
+            >
+              {sidebarCollapsed ? '展开' : '收起'}
+            </button>
+          </div>
+          <div
+            className={`flex overflow-hidden rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 ${
+              sidebarCollapsed ? 'hidden xl:flex' : 'flex'
+            }`}
+          >
             {(
               [
                 { key: 'settings', label: '文章设置' },
@@ -187,6 +291,12 @@ export default function EditorPage() {
                   className="w-full rounded-lg border border-slate-200 px-3 py-2"
                   placeholder="图片 Alt 文本 (SEO 必填)"
                 />
+                <input
+                  value={imageSource}
+                  onChange={(event) => setImageSource(event.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                  placeholder="Image Source 链接"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase text-slate-400">分类与标签</label>
@@ -228,6 +338,9 @@ export default function EditorPage() {
                   className="w-full rounded-lg border border-slate-200 px-3 py-2"
                   placeholder="article-slug"
                 />
+                {slugHasInvalid && (
+                  <p className="text-xs text-red-500">仅支持字母、数字与连字符 (-)。</p>
+                )}
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -250,6 +363,12 @@ export default function EditorPage() {
                     {metaCount}/{META_MAX}
                   </span>
                 </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className={`h-2 ${classForCount(metaCount, META_MIN, META_MAX)}`}
+                    style={{ width: `${metaProgress}%` }}
+                  />
+                </div>
                 <textarea
                   value={metaDescription}
                   onChange={(event) => setMetaDescription(event.target.value)}
@@ -257,7 +376,10 @@ export default function EditorPage() {
                   rows={4}
                   placeholder="建议 120-160 字，支持一键生成"
                 />
-                <button className="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
+                <button
+                  onClick={handleGenerateMeta}
+                  className="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700"
+                >
                   一键生成 Meta Description
                 </button>
               </div>
@@ -272,6 +394,15 @@ export default function EditorPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase text-slate-400">高级选项</label>
+                <label className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600">
+                  <span>结构化数据 (Schema)</span>
+                  <input
+                    type="checkbox"
+                    checked={structuredEnabled}
+                    onChange={(event) => setStructuredEnabled(event.target.checked)}
+                    className="h-4 w-4"
+                  />
+                </label>
                 <input
                   value={canonicalUrl}
                   onChange={(event) => setCanonicalUrl(event.target.value)}
@@ -287,6 +418,7 @@ export default function EditorPage() {
                   value={schemaType}
                   onChange={(event) => setSchemaType(event.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                  disabled={!structuredEnabled}
                 >
                   <option value="article">Schema: Article</option>
                   <option value="faq">Schema: FAQ</option>
@@ -301,20 +433,31 @@ export default function EditorPage() {
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
                 <p className="text-xs font-semibold text-slate-400">综合得分</p>
                 <div className="mt-2 flex items-end gap-2">
-                  <span className="text-3xl font-semibold text-slate-900">82</span>
+                  <span className="text-3xl font-semibold text-slate-900">{auditSnapshot.score}</span>
                   <span className="text-xs text-slate-500">/ 100</span>
                 </div>
                 <p className="mt-2 text-xs text-slate-500">基于 E-E-A-T 的实时评估</p>
               </div>
               <div className="space-y-3">
                 <p className="text-xs font-semibold uppercase text-slate-400">检查清单</p>
-                <ChecklistItem label="H1 标题唯一" isOk={hasH1} />
-                <ChecklistItem label="Meta Description 已填写" isOk={hasMeta} />
-                <ChecklistItem label="包含图片" isOk={hasImages} />
-                <ChecklistItem label="包含内链" isOk={hasInternalLinks} />
-                <ChecklistItem label="包含外链" isOk={hasExternalLinks} />
-                <ChecklistItem label="关键词密度" isOk={Number(keywordDensity) > 0.5} />
+                <ChecklistItem label="H1 标题唯一" isOk={auditSnapshot.hasH1} />
+                <ChecklistItem label="Meta Description 已填写" isOk={auditSnapshot.hasMeta} />
+                <ChecklistItem label="包含图片" isOk={auditSnapshot.hasImages} />
+                <ChecklistItem label="包含内链" isOk={auditSnapshot.hasInternalLinks} />
+                <ChecklistItem label="包含外链" isOk={auditSnapshot.hasExternalLinks} />
+                <ChecklistItem label="关键词密度" isOk={Number(auditSnapshot.keywordDensity) > 0.5} />
+                <ChecklistItem label="关键词出现在 H1" isOk={auditSnapshot.keywordInTitle} />
+                <ChecklistItem label="关键词出现在首段" isOk={auditSnapshot.keywordInIntro} />
               </div>
+              {showImproveTips && (
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-slate-600">
+                  <p className="font-semibold text-blue-700">AI 改进建议</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-4">
+                    <li>补充作者简介与引用来源，提升权威度。</li>
+                    <li>在结尾加入行动号召模块，增强参与度。</li>
+                  </ul>
+                </div>
+              )}
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase text-slate-400">内容建议</p>
                 <ul className="list-disc space-y-1 pl-4 text-xs text-slate-500">
@@ -327,6 +470,31 @@ export default function EditorPage() {
           )}
         </aside>
       </main>
+
+      {showPublishWarning && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-slate-900">SEO 风险提示</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              当前文章缺少 H1 标题或 Meta Description。直接发布可能影响搜索表现，是否继续？
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowPublishWarning(false)}
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600"
+              >
+                返回编辑
+              </button>
+              <button
+                onClick={() => setShowPublishWarning(false)}
+                className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white"
+              >
+                继续发布
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

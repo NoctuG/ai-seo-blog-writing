@@ -55,15 +55,19 @@ export default function RootLayout({
     <html lang={config.site.language}>
       <body className={inter.className}>
         <div className="min-h-screen flex flex-col">
-          <header className="border-b">
+          <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
             <nav className="container mx-auto px-4 py-4">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{config.site.name}</h1>
-                <div className="flex gap-4">
-                  <a href="/" className="hover:text-blue-600">首页</a>
-                  <a href="/generate" className="hover:text-blue-600">生成文章</a>
-                  <a href="/articles" className="hover:text-blue-600">文章列表</a>
-                  <a href="/tools" className="hover:text-blue-600">SEO工具</a>
+                <a href="/" className="text-2xl font-bold hover:text-blue-600 transition-colors">
+                  {config.site.name}
+                </a>
+                <div className="flex gap-6 items-center">
+                  <a href="/" className="hover:text-blue-600 transition-colors">首页</a>
+                  <a href="/generate" className="hover:text-blue-600 transition-colors">快速生成</a>
+                  <a href="/generate-advanced" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all font-medium">
+                    高级生成器
+                  </a>
+                  <a href="/articles" className="hover:text-blue-600 transition-colors">文章列表</a>
                 </div>
               </div>
             </nav>

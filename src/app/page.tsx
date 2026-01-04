@@ -12,12 +12,18 @@ export default function Home() {
           <p className="text-xl text-gray-600 mb-8">
             AI驱动的内容生成，自动SEO优化，让您的博客脱颖而出
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 justify-center flex-wrap">
             <Link
               href="/generate"
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg hover:shadow-xl"
             >
-              开始生成文章
+              快速生成
+            </Link>
+            <Link
+              href="/generate-advanced"
+              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-semibold shadow-lg hover:shadow-xl"
+            >
+              ⚡ 高级生成器
             </Link>
             <Link
               href="/articles"
@@ -62,18 +68,68 @@ export default function Home() {
           />
         </section>
 
+        {/* Generator Options */}
+        <section className="grid md:grid-cols-2 gap-6 mb-16">
+          <div className="card hover:shadow-xl transition-shadow border-2 border-blue-200">
+            <div className="text-3xl mb-3">⚡</div>
+            <h3 className="text-2xl font-bold mb-3">快速生成</h3>
+            <p className="text-gray-600 mb-4">
+              简洁的界面，几步操作即可生成文章。适合快速创作需求。
+            </p>
+            <ul className="text-sm text-gray-600 mb-6 space-y-2">
+              <li>✓ 简单易用</li>
+              <li>✓ 快速生成</li>
+              <li>✓ 自动SEO优化</li>
+            </ul>
+            <Link
+              href="/generate"
+              className="btn btn-primary w-full"
+            >
+              使用快速生成
+            </Link>
+          </div>
+
+          <div className="card hover:shadow-xl transition-shadow border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+            <div className="text-3xl mb-3">🎯</div>
+            <h3 className="text-2xl font-bold mb-3">高级生成器</h3>
+            <p className="text-gray-600 mb-4">
+              9大设置模块，100+可调参数。完全掌控文章的每个细节。
+            </p>
+            <ul className="text-sm text-gray-600 mb-6 space-y-2">
+              <li>✓ 精细化控制</li>
+              <li>✓ 品牌声音定制</li>
+              <li>✓ 社交媒体同步</li>
+              <li>✓ 媒体中心集成</li>
+            </ul>
+            <Link
+              href="/generate-advanced"
+              className="btn w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
+            >
+              使用高级生成器
+            </Link>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 text-center">
           <h2 className="text-3xl font-bold mb-4">准备好开始了吗？</h2>
           <p className="text-gray-600 mb-6">
             支持Claude和OpenAI，轻量化部署，完全免费使用
           </p>
-          <Link
-            href="/generate"
-            className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-          >
-            立即开始
-          </Link>
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/generate"
+              className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+              快速开始
+            </Link>
+            <Link
+              href="/generate-advanced"
+              className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-semibold"
+            >
+              高级设置
+            </Link>
+          </div>
         </section>
       </div>
     </div>

@@ -19,7 +19,11 @@ export class ClaudeProvider {
     });
   }
 
-  async generateText(prompt: string, systemPrompt?: string): Promise<string> {
+  async generateText(
+    prompt: string,
+    systemPrompt?: string,
+    _options?: { connectToWeb?: boolean }
+  ): Promise<string> {
     try {
       const response = await this.client.messages.create({
         model: config.ai.anthropic.model,

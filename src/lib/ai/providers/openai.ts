@@ -4,31 +4,41 @@ import config from '@/lib/config';
 
 export class OpenAIProvider {
   private client: OpenAI;
+  private model: string;
 
   constructor(aiConfig?: AIConfig) {
     const apiKey = aiConfig?.apiKey || config.ai.openai.apiKey;
     const baseUrl = aiConfig?.baseUrl || config.ai.openai.baseUrl;
+    const model = aiConfig?.model || config.ai.openai.model;
 
     if (!apiKey) {
       throw new Error('OpenAI API key is required');
     }
 
+    this.model = model;
     this.client = new OpenAI({
       apiKey,
-      ...(baseUrl && { baseURL: baseUrl }),
+      ...(baseUrl && { baseURL: normalizeOpenAIBaseUrl(baseUrl) }),
     });
   }
 
-  async generateText(prompt: string, systemPrompt?: string): Promise<string> {
+  async generateText(
+    prompt: string,
+    systemPrompt?: string,
+    options?: { connectToWeb?: boolean }
+  ): Promise<string> {
     try {
+      const connectToWeb = options?.connectToWeb ?? false;
+      const model = connectToWeb ? ensureNetModel(this.model) : this.model;
       const response = await this.client.chat.completions.create({
-        model: config.ai.openai.model,
+        model,
         messages: [
           ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
           { role: 'user' as const, content: prompt },
         ],
         temperature: 0.7,
         max_tokens: 4096,
+        search: connectToWeb,
       });
 
       const content = response.choices[0]?.message?.content;
@@ -106,10 +116,10 @@ ${options.brandInfo ? `品牌信息：
 4. 包含具体例子和事实
 5. SEO友好但不过度优化`;
 
-    return this.generateText(prompt, systemPrompt);
+    return this.generateText(prompt, systemPrompt, { connectToWeb: options.connectToWeb });
   }
 
-  async analyzeSERP(keyword: string, _options?: { connectToWeb?: boolean }): Promise<any> {
+  async analyzeSERP(keyword: string, options?: { connectToWeb?: boolean }): Promise<any> {
     const systemPrompt = '你是一个SEO分析专家，擅长分析搜索引擎结果页面（SERP）和用户搜索意图。';
 
     const prompt = `请分析关键词 "${keyword}" 的搜索意图和内容策略：
@@ -122,7 +132,7 @@ ${options.brandInfo ? `品牌信息：
 
 请以JSON格式输出分析结果。`;
 
-    const response = await this.generateText(prompt, systemPrompt);
+    const response = await this.generateText(prompt, systemPrompt, { connectToWeb: options?.connectToWeb });
 
     try {
       // Try to extract JSON from the response
@@ -155,4 +165,19 @@ ${improvements.map((imp, i) => `${i + 1}. ${imp}`).join('\n')}
 
     return this.generateText(prompt, systemPrompt);
   }
+}
+
+function normalizeOpenAIBaseUrl(baseUrl: string): string {
+  const trimmed = baseUrl.replace(/\/+$/, '');
+  if (trimmed.endsWith('/v1/chat/completions')) {
+    return trimmed.replace(/\/v1\/chat\/completions$/, '/v1');
+  }
+  if (trimmed.endsWith('/chat/completions')) {
+    return trimmed.replace(/\/chat\/completions$/, '/v1');
+  }
+  return trimmed;
+}
+
+function ensureNetModel(model: string): string {
+  return model.startsWith('net-') ? model : `net-${model}`;
 }

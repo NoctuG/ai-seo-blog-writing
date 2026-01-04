@@ -26,6 +26,10 @@ export async function POST(request: NextRequest) {
       length: body.length,
       language: body.language,
       brandInfo: body.brandInfo,
+      nlpKeywords: body.nlpKeywords,
+      internalLinks: body.internalLinks,
+      externalLinks: body.externalLinks,
+      keywordDensity: body.keywordDensity,
     });
 
     // Extract title from content (first H1)

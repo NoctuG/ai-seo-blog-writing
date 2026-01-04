@@ -37,6 +37,10 @@ export interface ArticleMetadata {
 export interface ContentGenerationRequest {
   topic: string;
   keywords: string[];
+  nlpKeywords?: string[];
+  internalLinks?: string[];
+  externalLinks?: string[];
+  keywordDensity?: number;
   targetAudience?: string;
   tone?: 'professional' | 'casual' | 'technical' | 'friendly';
   length?: 'short' | 'medium' | 'long';

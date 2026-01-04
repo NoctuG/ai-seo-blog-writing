@@ -7,6 +7,9 @@ export default function ArticleGenerator() {
   const [formData, setFormData] = useState<ContentGenerationRequest>({
     topic: '',
     keywords: [],
+    nlpKeywords: [],
+    internalLinks: [],
+    externalLinks: [],
     targetAudience: '',
     tone: 'professional',
     length: 'medium',
@@ -16,9 +19,18 @@ export default function ArticleGenerator() {
   });
 
   const [keywordInput, setKeywordInput] = useState('');
+  const [nlpKeywordInput, setNlpKeywordInput] = useState('');
+  const [internalLinkInput, setInternalLinkInput] = useState('');
+  const [externalLinkInput, setExternalLinkInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
+
+  const parseListInput = (value: string) =>
+    value
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
 
   const handleAddKeyword = () => {
     if (keywordInput.trim() && !formData.keywords.includes(keywordInput.trim())) {
@@ -34,6 +46,26 @@ export default function ArticleGenerator() {
     setFormData({
       ...formData,
       keywords: formData.keywords.filter(k => k !== keyword),
+    });
+  };
+
+  const handleAddNlpKeyword = () => {
+    if (
+      nlpKeywordInput.trim()
+      && !formData.nlpKeywords?.includes(nlpKeywordInput.trim())
+    ) {
+      setFormData({
+        ...formData,
+        nlpKeywords: [...(formData.nlpKeywords || []), nlpKeywordInput.trim()],
+      });
+      setNlpKeywordInput('');
+    }
+  };
+
+  const handleRemoveNlpKeyword = (keyword: string) => {
+    setFormData({
+      ...formData,
+      nlpKeywords: (formData.nlpKeywords || []).filter((k) => k !== keyword),
     });
   };
 
@@ -116,6 +148,104 @@ export default function ArticleGenerator() {
                 </button>
               </span>
             ))}
+          </div>
+        </div>
+
+        {/* Keyword Expansion */}
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            关键词扩展（NLP关键词）
+          </label>
+          <div className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={nlpKeywordInput}
+              onChange={(e) => setNlpKeywordInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddNlpKeyword())}
+              className="input"
+              placeholder="输入NLP关键词后按回车添加"
+            />
+            <button
+              type="button"
+              onClick={handleAddNlpKeyword}
+              className="btn btn-secondary"
+            >
+              添加
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(formData.nlpKeywords || []).map((keyword) => (
+              <span key={keyword} className="badge badge-green flex items-center gap-1">
+                {keyword}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveNlpKeyword(keyword)}
+                  className="ml-1 hover:text-red-600"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Internal/External Links */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              内链URL列表
+            </label>
+            <textarea
+              value={internalLinkInput}
+              onChange={(e) => {
+                const value = e.target.value;
+                setInternalLinkInput(value);
+                setFormData({
+                  ...formData,
+                  internalLinks: parseListInput(value),
+                });
+              }}
+              className="input min-h-[120px]"
+              placeholder="每行一个URL或用逗号分隔"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              外链URL列表
+            </label>
+            <textarea
+              value={externalLinkInput}
+              onChange={(e) => {
+                const value = e.target.value;
+                setExternalLinkInput(value);
+                setFormData({
+                  ...formData,
+                  externalLinks: parseListInput(value),
+                });
+              }}
+              className="input min-h-[120px]"
+              placeholder="每行一个URL或用逗号分隔"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              期望关键词密度（%）
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formData.keywordDensity ?? ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData({
+                  ...formData,
+                  keywordDensity: value === '' ? undefined : Number(value),
+                });
+              }}
+              className="input"
+              placeholder="例如：1.5"
+            />
           </div>
         </div>
 

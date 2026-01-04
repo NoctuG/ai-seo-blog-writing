@@ -48,6 +48,10 @@ export class OpenAIProvider {
       tone?: string;
       length?: string;
       language?: string;
+      nlpKeywords?: string[];
+      internalLinks?: string[];
+      externalLinks?: string[];
+      keywordDensity?: number;
       brandInfo?: any;
     } = {}
   ): Promise<string> {
@@ -67,6 +71,14 @@ export class OpenAIProvider {
 主题：${topic}
 
 目标关键词：${keywords.join(', ')}
+
+${options.nlpKeywords?.length ? `NLP关键词扩展：${options.nlpKeywords.join(', ')}` : ''}
+
+${options.internalLinks?.length ? `内链URL列表：${options.internalLinks.join(', ')}` : ''}
+
+${options.externalLinks?.length ? `外链URL列表：${options.externalLinks.join(', ')}` : ''}
+
+${options.keywordDensity ? `期望关键词密度：${options.keywordDensity}%` : ''}
 
 ${options.brandInfo ? `品牌信息：
 - 品牌名称：${options.brandInfo.name}
@@ -98,10 +110,13 @@ ${options.brandInfo ? `品牌信息：
 
 请确保文章：
 1. 自然融入所有目标关键词
-2. 提供实用价值
-3. 结构清晰，易于阅读
-4. 包含具体例子和事实
-5. SEO友好但不过度优化`;
+2. 如提供NLP关键词扩展，需在正文中自然加入
+3. 如提供内链/外链URL，请在相关段落中插入并使用合适的锚文本
+4. 如提供关键词密度，整体密度控制接近该比例且自然流畅
+5. 提供实用价值
+6. 结构清晰，易于阅读
+7. 包含具体例子和事实
+8. SEO友好但不过度优化`;
 
     return this.generateText(prompt, systemPrompt);
   }

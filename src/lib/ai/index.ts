@@ -28,6 +28,10 @@ export class AIService {
       tone?: 'professional' | 'casual' | 'technical' | 'friendly';
       length?: 'short' | 'medium' | 'long';
       language?: string;
+      nlpKeywords?: string[];
+      internalLinks?: string[];
+      externalLinks?: string[];
+      keywordDensity?: number;
       brandInfo?: {
         name: string;
         description?: string;

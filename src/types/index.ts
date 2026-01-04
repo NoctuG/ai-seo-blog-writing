@@ -44,6 +44,11 @@ export interface ContentGenerationRequest {
   brandInfo?: BrandInfo;
   includeImages?: boolean;
   includeFacts?: boolean;
+  includeConclusion?: boolean;
+  includeTables?: boolean;
+  includeLists?: boolean;
+  includeKeyTakeaways?: boolean;
+  includeFAQs?: boolean;
 }
 
 export interface BrandInfo {

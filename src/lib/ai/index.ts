@@ -34,6 +34,11 @@ export class AIService {
         products?: string[];
         values?: string[];
       };
+      includeConclusion?: boolean;
+      includeTables?: boolean;
+      includeLists?: boolean;
+      includeKeyTakeaways?: boolean;
+      includeFAQs?: boolean;
     } = {}
   ): Promise<string> {
     return this.provider.generateArticle(topic, keywords, options);

@@ -13,6 +13,11 @@ export default function ArticleGenerator() {
     language: 'zh-CN',
     includeImages: true,
     includeFacts: true,
+    includeConclusion: true,
+    includeTables: false,
+    includeLists: true,
+    includeKeyTakeaways: true,
+    includeFAQs: false,
   });
 
   const [keywordInput, setKeywordInput] = useState('');
@@ -183,6 +188,51 @@ export default function ArticleGenerator() {
               onChange={(e) => setFormData({ ...formData, includeFacts: e.target.checked })}
             />
             <span className="text-sm">嵌入事实和证据</span>
+          </label>
+        </div>
+
+        {/* Structured Sections */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium">结构化模块</p>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.includeConclusion}
+              onChange={(e) => setFormData({ ...formData, includeConclusion: e.target.checked })}
+            />
+            <span className="text-sm">Conclusion</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.includeTables}
+              onChange={(e) => setFormData({ ...formData, includeTables: e.target.checked })}
+            />
+            <span className="text-sm">Tables</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.includeLists}
+              onChange={(e) => setFormData({ ...formData, includeLists: e.target.checked })}
+            />
+            <span className="text-sm">Lists</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.includeKeyTakeaways}
+              onChange={(e) => setFormData({ ...formData, includeKeyTakeaways: e.target.checked })}
+            />
+            <span className="text-sm">Key Takeaways</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.includeFAQs}
+              onChange={(e) => setFormData({ ...formData, includeFAQs: e.target.checked })}
+            />
+            <span className="text-sm">FAQs</span>
           </label>
         </div>
 

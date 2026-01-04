@@ -52,8 +52,19 @@ export class ClaudeProvider {
       length?: string;
       language?: string;
       brandInfo?: any;
+      includeConclusion?: boolean;
+      includeTables?: boolean;
+      includeLists?: boolean;
+      includeKeyTakeaways?: boolean;
+      includeFAQs?: boolean;
     } = {}
   ): Promise<string> {
+    const includeConclusion = options.includeConclusion ?? true;
+    const includeTables = options.includeTables ?? false;
+    const includeLists = options.includeLists ?? true;
+    const includeKeyTakeaways = options.includeKeyTakeaways ?? true;
+    const includeFAQs = options.includeFAQs ?? false;
+
     const systemPrompt = `你是一个专业的SEO内容写作专家。你的任务是创建高质量、SEO优化的博客文章。
 
 要求：
@@ -64,6 +75,21 @@ export class ClaudeProvider {
 - 语言风格：${options.tone || '专业'}
 - 文章长度：${options.length || '中等'} (约1500-2000字)
 - 语言：${options.language || 'zh-CN'}`;
+
+    const structureSections = [
+      '## 简介\n[引人入胜的开场，介绍主题]',
+      '## [主要章节1]\n[详细内容]',
+      '### [子章节1.1]\n[详细内容]',
+      '### [子章节1.2]\n[详细内容]',
+      '## [主要章节2]\n[详细内容]',
+      includeLists ? '## 列表\n[使用项目符号或编号列出关键点]' : null,
+      includeTables
+        ? '## 表格\n[用Markdown表格展示关键数据；如暂无具体数据，提供合理占位符表格]'
+        : null,
+      includeKeyTakeaways ? '## 关键要点\n[3-6条简洁要点]' : null,
+      includeFAQs ? '## 常见问题（FAQs）\nQ: 问题1\nA: 回答1\n\nQ: 问题2\nA: 回答2' : null,
+      includeConclusion ? '## 结论\n[总结要点，提供行动建议]' : null,
+    ].filter(Boolean);
 
     const prompt = `请为以下主题创建一篇博客文章：
 
@@ -81,23 +107,7 @@ ${options.brandInfo ? `品牌信息：
 
 # [文章标题]
 
-## 简介
-[引人入胜的开场，介绍主题]
-
-## [主要章节1]
-[详细内容]
-
-### [子章节1.1]
-[详细内容]
-
-### [子章节1.2]
-[详细内容]
-
-## [主要章节2]
-[详细内容]
-
-## 结论
-[总结要点，提供行动建议]
+${structureSections.join('\n\n')}
 
 请确保文章：
 1. 自然融入所有目标关键词

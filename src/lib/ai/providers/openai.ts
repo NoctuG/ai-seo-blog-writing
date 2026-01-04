@@ -49,6 +49,7 @@ export class OpenAIProvider {
       length?: string;
       language?: string;
       brandInfo?: any;
+      outline?: string;
     } = {}
   ): Promise<string> {
     const systemPrompt = `你是一个专业的SEO内容写作专家。你的任务是创建高质量、SEO优化的博客文章。
@@ -96,12 +97,48 @@ ${options.brandInfo ? `品牌信息：
 ## 结论
 [总结要点，提供行动建议]
 
+${options.outline ? `请严格遵循以下大纲结构（仅使用H2/H3标题，不要添加额外章节）：\n${options.outline}\n` : ''}
+
 请确保文章：
 1. 自然融入所有目标关键词
 2. 提供实用价值
 3. 结构清晰，易于阅读
 4. 包含具体例子和事实
 5. SEO友好但不过度优化`;
+
+    return this.generateText(prompt, systemPrompt);
+  }
+
+  async generateOutline(
+    topic: string,
+    keywords: string[],
+    options: {
+      tone?: string;
+      length?: string;
+      language?: string;
+      brandInfo?: any;
+    } = {}
+  ): Promise<string> {
+    const systemPrompt = `你是一个专业的SEO内容策划专家。请输出结构清晰的文章大纲。`;
+
+    const prompt = `请为以下主题生成文章大纲（仅包含H2/H3标题，不要写正文内容）：
+
+主题：${topic}
+
+目标关键词：${keywords.join(', ')}
+
+${options.brandInfo ? `品牌信息：
+- 品牌名称：${options.brandInfo.name}
+- 品牌描述：${options.brandInfo.description || ''}
+- 产品/服务：${options.brandInfo.products?.join(', ') || ''}
+` : ''}
+
+要求：
+1. 只输出H2/H3标题，使用Markdown标题格式（## 和 ###）
+2. 覆盖主题的主要内容板块，逻辑清晰
+3. H2不少于4个，每个H2下至少2个H3（如不适用可省略）
+4. 语言：${options.language || 'zh-CN'}
+5. 风格：${options.tone || '专业'}`;
 
     return this.generateText(prompt, systemPrompt);
   }

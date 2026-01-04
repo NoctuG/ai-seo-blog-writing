@@ -34,9 +34,28 @@ export class AIService {
         products?: string[];
         values?: string[];
       };
+      outline?: string;
     } = {}
   ): Promise<string> {
     return this.provider.generateArticle(topic, keywords, options);
+  }
+
+  async generateOutline(
+    topic: string,
+    keywords: string[],
+    options: {
+      tone?: 'professional' | 'casual' | 'technical' | 'friendly';
+      length?: 'short' | 'medium' | 'long';
+      language?: string;
+      brandInfo?: {
+        name: string;
+        description?: string;
+        products?: string[];
+        values?: string[];
+      };
+    } = {}
+  ): Promise<string> {
+    return this.provider.generateOutline(topic, keywords, options);
   }
 
   async analyzeSERP(keyword: string): Promise<any> {

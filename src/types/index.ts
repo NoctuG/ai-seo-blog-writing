@@ -37,6 +37,7 @@ export interface ArticleMetadata {
 export interface ContentGenerationRequest {
   topic: string;
   keywords: string[];
+  mode?: 'article' | 'outline';
   targetAudience?: string;
   tone?: 'professional' | 'casual' | 'technical' | 'friendly';
   length?: 'short' | 'medium' | 'long';
@@ -44,6 +45,7 @@ export interface ContentGenerationRequest {
   brandInfo?: BrandInfo;
   includeImages?: boolean;
   includeFacts?: boolean;
+  outline?: OutlineSection[];
 }
 
 export interface BrandInfo {
@@ -57,6 +59,17 @@ export interface ContentGenerationResult {
   article: Article;
   suggestions: string[];
   serpAnalysis?: SERPAnalysis;
+}
+
+export interface OutlineHeading {
+  id: string;
+  title: string;
+}
+
+export interface OutlineSection {
+  id: string;
+  title: string;
+  children: OutlineHeading[];
 }
 
 // SERP Analysis Types

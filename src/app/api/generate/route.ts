@@ -3,7 +3,18 @@ import { createAIService } from '@/lib/ai';
 import { SEOAnalyzer } from '@/lib/seo/analyzer';
 import { MetadataGenerator } from '@/lib/seo/metadata';
 import { generateSlug, generateArticleId, saveArticle } from '@/utils/article';
-import { Article, ContentGenerationRequest } from '@/types';
+import { Article, ContentGenerationRequest, OutlineSection } from '@/types';
+
+const buildOutlineMarkdown = (outline: OutlineSection[]): string => {
+  return outline
+    .map((section) => {
+      const children = section.children
+        .map((child) => `### ${child.title}`)
+        .join('\n');
+      return [`## ${section.title}`, children].filter(Boolean).join('\n');
+    })
+    .join('\n\n');
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,12 +31,26 @@ export async function POST(request: NextRequest) {
     // Initialize AI service
     const aiService = createAIService();
 
+    if (body.mode === 'outline') {
+      const outline = await aiService.generateOutline(body.topic, body.keywords, {
+        tone: body.tone,
+        length: body.length,
+        language: body.language,
+        brandInfo: body.brandInfo,
+      });
+
+      return NextResponse.json({ outline });
+    }
+
+    const outlineMarkdown = body.outline?.length ? buildOutlineMarkdown(body.outline) : undefined;
+
     // Generate article content
     const content = await aiService.generateArticle(body.topic, body.keywords, {
       tone: body.tone,
       length: body.length,
       language: body.language,
       brandInfo: body.brandInfo,
+      outline: outlineMarkdown,
     });
 
     // Extract title from content (first H1)

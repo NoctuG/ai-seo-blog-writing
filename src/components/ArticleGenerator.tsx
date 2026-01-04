@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ContentGenerationRequest } from '@/types';
+import { ContentGenerationRequest, OutlineSection } from '@/types';
 
 export default function ArticleGenerator() {
   const [formData, setFormData] = useState<ContentGenerationRequest>({
@@ -17,8 +17,49 @@ export default function ArticleGenerator() {
 
   const [keywordInput, setKeywordInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [outlineLoading, setOutlineLoading] = useState(false);
   const [error, setError] = useState('');
+  const [outlineError, setOutlineError] = useState('');
   const [result, setResult] = useState<any>(null);
+  const [outlineItems, setOutlineItems] = useState<OutlineSection[]>([]);
+  const [outlineConfirmed, setOutlineConfirmed] = useState(false);
+
+  const parseOutline = (rawOutline: string): OutlineSection[] => {
+    const lines = rawOutline
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const sections: OutlineSection[] = [];
+
+    lines.forEach((line) => {
+      if (line.startsWith('## ')) {
+        sections.push({
+          id: crypto.randomUUID(),
+          title: line.replace(/^##\s+/, '').trim(),
+          children: [],
+        });
+      } else if (line.startsWith('### ')) {
+        const title = line.replace(/^###\s+/, '').trim();
+        const lastSection = sections[sections.length - 1];
+        if (lastSection) {
+          lastSection.children.push({ id: crypto.randomUUID(), title });
+        } else {
+          sections.push({
+            id: crypto.randomUUID(),
+            title: '未命名章节',
+            children: [{ id: crypto.randomUUID(), title }],
+          });
+        }
+      }
+    });
+
+    return sections;
+  };
+
+  const handleOutlineChange = (updated: OutlineSection[]) => {
+    setOutlineItems(updated);
+    setOutlineConfirmed(false);
+  };
 
   const handleAddKeyword = () => {
     if (keywordInput.trim() && !formData.keywords.includes(keywordInput.trim())) {
@@ -44,10 +85,18 @@ export default function ArticleGenerator() {
     setResult(null);
 
     try {
+      if (!outlineConfirmed || outlineItems.length === 0) {
+        throw new Error('请先生成并确认大纲');
+      }
+
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          outline: outlineItems,
+          mode: 'article',
+        }),
       });
 
       if (!response.ok) {
@@ -61,6 +110,123 @@ export default function ArticleGenerator() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGenerateOutline = async () => {
+    setOutlineLoading(true);
+    setOutlineError('');
+    setOutlineConfirmed(false);
+    setResult(null);
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          mode: 'outline',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('生成大纲失败');
+      }
+
+      const data = await response.json();
+      const parsedOutline = parseOutline(data.outline || '');
+      if (parsedOutline.length === 0) {
+        throw new Error('未能解析大纲，请重试');
+      }
+      setOutlineItems(parsedOutline);
+    } catch (err) {
+      setOutlineError(err instanceof Error ? err.message : '生成大纲失败，请重试');
+    } finally {
+      setOutlineLoading(false);
+    }
+  };
+
+  const addSection = () => {
+    handleOutlineChange([
+      ...outlineItems,
+      { id: crypto.randomUUID(), title: '新章节', children: [] },
+    ]);
+  };
+
+  const addSubheading = (sectionIndex: number) => {
+    const updated = outlineItems.map((section, index) => {
+      if (index !== sectionIndex) return section;
+      return {
+        ...section,
+        children: [...section.children, { id: crypto.randomUUID(), title: '新子章节' }],
+      };
+    });
+    handleOutlineChange(updated);
+  };
+
+  const updateSectionTitle = (sectionIndex: number, title: string) => {
+    const updated = outlineItems.map((section, index) =>
+      index === sectionIndex ? { ...section, title } : section
+    );
+    handleOutlineChange(updated);
+  };
+
+  const updateSubheadingTitle = (sectionIndex: number, headingIndex: number, title: string) => {
+    const updated = outlineItems.map((section, index) => {
+      if (index !== sectionIndex) return section;
+      const children = section.children.map((heading, childIndex) =>
+        childIndex === headingIndex ? { ...heading, title } : heading
+      );
+      return { ...section, children };
+    });
+    handleOutlineChange(updated);
+  };
+
+  const removeSection = (sectionIndex: number) => {
+    handleOutlineChange(outlineItems.filter((_, index) => index !== sectionIndex));
+  };
+
+  const removeSubheading = (sectionIndex: number, headingIndex: number) => {
+    const updated = outlineItems.map((section, index) => {
+      if (index !== sectionIndex) return section;
+      const children = section.children.filter((_, childIndex) => childIndex !== headingIndex);
+      return { ...section, children };
+    });
+    handleOutlineChange(updated);
+  };
+
+  const moveSection = (sectionIndex: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? sectionIndex - 1 : sectionIndex + 1;
+    if (targetIndex < 0 || targetIndex >= outlineItems.length) return;
+    const updated = [...outlineItems];
+    const [moved] = updated.splice(sectionIndex, 1);
+    updated.splice(targetIndex, 0, moved);
+    handleOutlineChange(updated);
+  };
+
+  const moveSubheading = (
+    sectionIndex: number,
+    headingIndex: number,
+    direction: 'up' | 'down'
+  ) => {
+    const updated = outlineItems.map((section, index) => {
+      if (index !== sectionIndex) return section;
+      const targetIndex = direction === 'up' ? headingIndex - 1 : headingIndex + 1;
+      if (targetIndex < 0 || targetIndex >= section.children.length) return section;
+      const children = [...section.children];
+      const [moved] = children.splice(headingIndex, 1);
+      children.splice(targetIndex, 0, moved);
+      return { ...section, children };
+    });
+    handleOutlineChange(updated);
+  };
+
+  const handleConfirmOutline = () => {
+    if (outlineItems.length === 0) {
+      setOutlineError('请先生成大纲');
+      return;
+    }
+    setOutlineError('');
+    setOutlineConfirmed(true);
   };
 
   return (
@@ -193,10 +359,136 @@ export default function ArticleGenerator() {
           </div>
         )}
 
+        {/* Outline */}
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={handleGenerateOutline}
+            disabled={outlineLoading || formData.keywords.length === 0}
+            className="btn btn-secondary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {outlineLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="spinner"></span>
+                生成大纲中...
+              </span>
+            ) : (
+              '生成大纲'
+            )}
+          </button>
+
+          {outlineError && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              {outlineError}
+            </div>
+          )}
+
+          {outlineItems.length > 0 && (
+            <div className="p-4 border border-gray-200 rounded-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold">Outline Editor</h3>
+                <button type="button" onClick={addSection} className="btn btn-secondary">
+                  添加H2
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {outlineItems.map((section, sectionIndex) => (
+                  <div key={section.id} className="border border-gray-100 rounded-lg p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        value={section.title}
+                        onChange={(e) => updateSectionTitle(sectionIndex, e.target.value)}
+                        className="input flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => moveSection(sectionIndex, 'up')}
+                        className="btn btn-secondary"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveSection(sectionIndex, 'down')}
+                        className="btn btn-secondary"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addSubheading(sectionIndex)}
+                        className="btn btn-secondary"
+                      >
+                        添加H3
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeSection(sectionIndex)}
+                        className="btn btn-secondary"
+                      >
+                        删除
+                      </button>
+                    </div>
+
+                    {section.children.length > 0 && (
+                      <div className="mt-3 space-y-2 pl-4 border-l border-gray-200">
+                        {section.children.map((heading, headingIndex) => (
+                          <div key={heading.id} className="flex flex-wrap items-center gap-2">
+                            <input
+                              value={heading.title}
+                              onChange={(e) =>
+                                updateSubheadingTitle(sectionIndex, headingIndex, e.target.value)
+                              }
+                              className="input flex-1"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => moveSubheading(sectionIndex, headingIndex, 'up')}
+                              className="btn btn-secondary"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveSubheading(sectionIndex, headingIndex, 'down')}
+                              className="btn btn-secondary"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeSubheading(sectionIndex, headingIndex)}
+                              className="btn btn-secondary"
+                            >
+                              删除
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={handleConfirmOutline} className="btn btn-primary">
+                  确认大纲
+                </button>
+                {outlineConfirmed && (
+                  <span className="text-sm text-green-600 flex items-center">
+                    ✅ 已确认大纲
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading || formData.keywords.length === 0}
+          disabled={loading || formData.keywords.length === 0 || !outlineConfirmed}
           className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (

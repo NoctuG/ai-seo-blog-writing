@@ -7,6 +7,7 @@ export class OpenAIProvider {
 
   constructor(aiConfig?: AIConfig) {
     const apiKey = aiConfig?.apiKey || config.ai.openai.apiKey;
+    const baseUrl = aiConfig?.baseUrl || config.ai.openai.baseUrl;
 
     if (!apiKey) {
       throw new Error('OpenAI API key is required');
@@ -14,6 +15,7 @@ export class OpenAIProvider {
 
     this.client = new OpenAI({
       apiKey,
+      ...(baseUrl && { baseURL: baseUrl }),
     });
   }
 

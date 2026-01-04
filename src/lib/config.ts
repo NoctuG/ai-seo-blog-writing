@@ -12,12 +12,19 @@ export const config = {
     defaultProvider: (process.env.DEFAULT_AI_SERVICE || 'claude') as 'claude' | 'openai',
     anthropic: {
       apiKey: process.env.ANTHROPIC_API_KEY || '',
+      baseUrl: process.env.ANTHROPIC_BASE_URL || '',
       model: 'claude-3-5-sonnet-20241022',
     },
     openai: {
       apiKey: process.env.OPENAI_API_KEY || '',
+      baseUrl: process.env.OPENAI_BASE_URL || '',
       model: 'gpt-4-turbo-preview',
     },
+  },
+
+  auth: {
+    username: process.env.AUTH_USERNAME || 'admin',
+    password: process.env.AUTH_PASSWORD || '',
   },
 
   content: {

@@ -22,11 +22,6 @@ export const config = {
     },
   },
 
-  auth: {
-    username: process.env.AUTH_USERNAME || 'admin',
-    password: process.env.AUTH_PASSWORD || '',
-  },
-
   content: {
     maxArticleLength: parseInt(process.env.MAX_ARTICLE_LENGTH || '3000'),
     defaultTone: 'professional' as const,
@@ -42,25 +37,8 @@ export const config = {
     minExternalLinks: 1,
   },
 
-  images: {
-    formats: ['image/avif', 'image/webp', 'image/jpeg'],
-    sizes: {
-      thumbnail: { width: 400, height: 300 },
-      medium: { width: 800, height: 600 },
-      large: { width: 1200, height: 900 },
-      cover: { width: 1920, height: 1080 },
-    },
-  },
-
-  search: {
-    googleApiKey: process.env.GOOGLE_CUSTOM_SEARCH_API_KEY || '',
-    googleEngineId: process.env.GOOGLE_CUSTOM_SEARCH_ENGINE_ID || '',
-  },
-
   paths: {
     articles: 'data/articles',
-    images: 'public/images',
-    generatedImages: 'public/images/generated',
   },
 };
 

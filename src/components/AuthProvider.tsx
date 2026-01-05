@@ -7,6 +7,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   checkAuth: () => Promise<void>;
+  // 如果你需要在此处暴露 hasPassword，请取消下行的注释并更新 Context.Provider 的 value
+  // hasPassword: boolean; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +27,8 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // 保留了 codex 分支的新增状态：用于判断系统是否已设置密码
+  const [hasPassword, setHasPassword] = useState(false); 
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
 
@@ -34,6 +38,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         const data = await response.json();
         setIsAuthenticated(!!data.auth?.authenticated);
+        
+        // 注意：你可能还需要在这里更新 hasPassword 的状态
+        // 例如: setHasPassword(!!data.auth?.hasPassword);
       }
     } catch (error) {
       console.error('Failed to check auth status:', error);
@@ -47,6 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [pathname]);
 
   return (
+    // 目前 hasPassword 定义了但未使用，建议将其添加到 value 中以供全局使用
     <AuthContext.Provider value={{ isAuthenticated, loading, checkAuth }}>
       {children}
     </AuthContext.Provider>

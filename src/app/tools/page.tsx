@@ -1,4 +1,3 @@
- main
 import Link from 'next/link';
 import {
   Box,
@@ -31,7 +30,8 @@ const tools = [
     href: '/articles',
     icon: Article,
   },
-main
+];
+
 export default function ToolsPage() {
   return (
     <Box sx={{ py: { xs: 6, md: 10 } }}>

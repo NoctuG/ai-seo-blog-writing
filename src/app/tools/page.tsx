@@ -1,3 +1,4 @@
+ main
 import Link from 'next/link';
 import {
   Box,
@@ -30,13 +31,7 @@ const tools = [
     href: '/articles',
     icon: Article,
   },
-];
-
-export const metadata = {
-  title: 'SEO工具',
-  description: '汇总AI写作与SEO优化工具入口，快速开始内容生产。',
-};
-
+main
 export default function ToolsPage() {
   return (
     <Box sx={{ py: { xs: 6, md: 10 } }}>

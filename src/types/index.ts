@@ -43,11 +43,12 @@ export interface ContentGenerationRequest {
   length?: 'short' | 'medium' | 'long';
   language?: string;
   brandInfo?: BrandInfo;
+  connectToWeb?: boolean;
+  // CMS and social fields kept for backward compatibility
   cms?: CMSConfig;
   social?: SocialConfig;
   includeImages?: boolean;
   includeFacts?: boolean;
-  connectToWeb?: boolean;
 }
 
 export interface BrandInfo {
@@ -166,20 +167,6 @@ export interface Link {
   rel?: string;
 }
 
-// Image Generation Types
-export interface ImageGenerationRequest {
-  prompt: string;
-  style?: string;
-  size?: { width: number; height: number };
-}
-
-export interface GeneratedImage {
-  url: string;
-  alt: string;
-  width: number;
-  height: number;
-}
-
 // Sitemap Types
 export interface SitemapEntry {
   url: string;
@@ -188,20 +175,3 @@ export interface SitemapEntry {
   priority: number;
 }
 
-// Analytics Types
-export interface KeywordAnalysis {
-  keyword: string;
-  searchVolume?: number;
-  competition?: string;
-  difficulty?: number;
-  relatedKeywords: string[];
-}
-
-export interface CompetitorAnalysis {
-  url: string;
-  title: string;
-  keywords: string[];
-  contentLength: number;
-  backlinks?: number;
-  domainAuthority?: number;
-}

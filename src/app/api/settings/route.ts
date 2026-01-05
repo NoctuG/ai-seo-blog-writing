@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { getAuthConfig } from '@/lib/auth';
 
 const SETTINGS_FILE = path.join(process.cwd(), 'data', 'settings.json');
 const AUTH_COOKIE = 'auth_session';
@@ -12,10 +13,6 @@ interface Settings {
     openaiApiKey?: string;
     openaiBaseUrl?: string;
     defaultAiService?: 'claude' | 'openai';
-  };
-  auth?: {
-    username?: string;
-    passwordHash?: string;
   };
 }
 
@@ -43,13 +40,6 @@ async function saveSettings(settings: Settings): Promise<void> {
   await fs.writeFile(SETTINGS_FILE, JSON.stringify(settings, null, 2));
 }
 
-// Simple hash function for password (in production, use bcrypt)
-function hashPassword(password: string): string {
-  // This is a simple implementation - in production use bcrypt
-  const crypto = require('crypto');
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
-
 export async function GET(request: NextRequest) {
   try {
     const settings = await loadSettings();
@@ -65,8 +55,8 @@ export async function GET(request: NextRequest) {
         hasOpenaiKey: !!settings.api?.openaiApiKey,
       },
       auth: {
-        username: settings.auth?.username || 'admin',
-        hasPassword: !!settings.auth?.passwordHash,
+        username: getAuthConfig().username,
+        hasPassword: getAuthConfig().hasPassword,
         authenticated: authCookie === 'authenticated',
       },
     };
@@ -87,7 +77,7 @@ export async function POST(request: NextRequest) {
     const { type } = body;
 
     const settings = await loadSettings();
-    const hasPassword = !!settings.auth?.passwordHash;
+    const { hasPassword } = getAuthConfig();
     const isAuthenticated = authCookie === 'authenticated';
 
     if (hasPassword && !isAuthenticated) {
@@ -97,9 +87,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!hasPassword && type !== 'auth') {
+    if (!hasPassword) {
       return NextResponse.json(
-        { error: '请先设置登录账户。' },
+        { error: '请先在环境变量中配置登录密码。' },
         { status: 403 }
       );
     }
@@ -113,15 +103,11 @@ export async function POST(request: NextRequest) {
         openaiBaseUrl: body.openaiBaseUrl || '',
         defaultAiService: body.defaultAiService || 'claude',
       };
-    } else if (type === 'auth') {
-      settings.auth = {
-        ...settings.auth,
-        username: body.username || 'admin',
-      };
-
-      if (body.password) {
-        settings.auth.passwordHash = hashPassword(body.password);
-      }
+    } else {
+      return NextResponse.json(
+        { error: '无效的设置类型。' },
+        { status: 400 }
+      );
     }
 
     await saveSettings(settings);

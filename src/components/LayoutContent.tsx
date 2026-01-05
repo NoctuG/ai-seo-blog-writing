@@ -1,16 +1,32 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import NavigationBar from '@/components/NavigationBar';
 import { AuthProvider, useAuth } from '@/components/AuthProvider';
 import config from '@/lib/config';
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isAuthenticated, hasPassword } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, hasPassword, loading } = useAuth();
 
   // 不显示导航栏的页面
-  const hideNavbar = pathname === '/login' || (pathname === '/settings' && !hasPassword);
+  const hideNavbar = pathname === '/login';
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (hasPassword && !isAuthenticated && pathname !== '/login') {
+      router.replace('/login');
+    }
+  }, [hasPassword, isAuthenticated, loading, pathname, router]);
+
+  if (hasPassword && !isAuthenticated && pathname !== '/login') {
+    return null;
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

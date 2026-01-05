@@ -26,7 +26,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasPassword, setHasPassword] = useState(true);
+  const [hasPassword, setHasPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
 

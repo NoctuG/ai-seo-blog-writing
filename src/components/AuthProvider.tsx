@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  hasPassword: boolean;
   loading: boolean;
   checkAuth: () => Promise<void>;
 }
@@ -26,7 +25,6 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasPassword, setHasPassword] = useState(true);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
 
@@ -36,7 +34,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         const data = await response.json();
         setIsAuthenticated(!!data.auth?.authenticated);
-        setHasPassword(!!data.auth?.hasPassword);
       }
     } catch (error) {
       console.error('Failed to check auth status:', error);
@@ -50,7 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [pathname]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, hasPassword, loading, checkAuth }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

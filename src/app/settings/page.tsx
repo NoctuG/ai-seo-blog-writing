@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Container,
   Card,
   CardContent,
-  CardHeader,
   TextField,
   Button,
   Box,
@@ -21,38 +19,13 @@ import {
   Select,
   MenuItem,
   Grid,
-  Tabs,
-  Tab,
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
   Save,
   Settings as SettingsIcon,
-  Security,
-  Api,
 } from '@mui/icons-material';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`settings-tabpanel-${index}`}
-      aria-labelledby={`settings-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 interface SettingsData {
   // AI Settings
@@ -61,23 +34,9 @@ interface SettingsData {
   openaiApiKey: string;
   openaiBaseUrl: string;
   defaultAiService: 'claude' | 'openai';
-  // Auth Settings
-  username: string;
-  password: string;
-  confirmPassword: string;
-}
-
-interface SettingsResponse {
-  auth?: {
-    username?: string;
-    hasPassword?: boolean;
-    authenticated?: boolean;
-  };
 }
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -91,9 +50,6 @@ export default function SettingsPage() {
     openaiApiKey: '',
     openaiBaseUrl: '',
     defaultAiService: 'claude',
-    username: '',
-    password: '',
-    confirmPassword: '',
   });
 
   useEffect(() => {
@@ -105,39 +61,12 @@ export default function SettingsPage() {
         setSettings(prev => ({
           ...prev,
           ...parsed,
-          password: '',
-          confirmPassword: '',
         }));
       } catch (e) {
         console.error('Failed to parse saved settings');
       }
     }
   }, []);
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const response = await fetch('/api/settings');
-        if (!response.ok) {
-          return;
-        }
-        const data = (await response.json()) as SettingsResponse;
-
-        setSettings(prev => ({
-          ...prev,
-          username: data.auth?.username || prev.username,
-        }));
-      } catch {
-        // Ignore settings fetch errors to avoid blocking UI.
-      }
-    };
-
-    loadSettings();
-  }, []);
-
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
 
   const handleInputChange = (field: keyof SettingsData) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -201,78 +130,6 @@ export default function SettingsPage() {
     }
   };
 
-  const saveAuthSettings = async () => {
-    if (settings.password !== settings.confirmPassword) {
-      setSnackbar({
-        open: true,
-        message: '密码不匹配',
-        severity: 'error',
-      });
-      return;
-    }
-
-    if (settings.password && settings.password.length < 6) {
-      setSnackbar({
-        open: true,
-        message: '密码至少需要6个字符',
-        severity: 'error',
-      });
-      return;
-    }
-
-    try {
-      // 检查是否是首次设置密码
-      const settingsResponse = await fetch('/api/settings');
-      const settingsData = (await settingsResponse.json()) as SettingsResponse;
-      const isFirstTimeSetup = !settingsData.auth?.hasPassword;
-
-      const response = await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'auth',
-          username: settings.username,
-          password: settings.password,
-        }),
-      });
-
-      if (response.ok) {
-        setSettings(prev => ({
-          ...prev,
-          password: '',
-          confirmPassword: '',
-        }));
-
-        if (isFirstTimeSetup) {
-          // 首次设置密码，显示提示并跳转到登录页
-          setSnackbar({
-            open: true,
-            message: '密码设置成功！正在跳转到登录页面...',
-            severity: 'success',
-          });
-          setTimeout(() => {
-            router.push('/login');
-          }, 1500);
-        } else {
-          // 修改密码
-          setSnackbar({
-            open: true,
-            message: '认证设置已保存',
-            severity: 'success',
-          });
-        }
-      } else {
-        throw new Error('Failed to save settings');
-      }
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: '保存设置失败',
-        severity: 'error',
-      });
-    }
-  };
-
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
@@ -283,245 +140,126 @@ export default function SettingsPage() {
       </Box>
 
       <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            aria-label="settings tabs"
-            sx={{ px: 2 }}
-          >
-            <Tab
-              icon={<Api sx={{ mr: 1 }} />}
-              iconPosition="start"
-              label="API 配置"
-            />
-            <Tab
-              icon={<Security sx={{ mr: 1 }} />}
-              iconPosition="start"
-              label="认证设置"
-            />
-          </Tabs>
-        </Box>
-
         <CardContent sx={{ p: 3 }}>
-          {/* API Settings Tab */}
-          <TabPanel value={tabValue} index={0}>
-            <Typography variant="h6" gutterBottom fontWeight={600}>
-              AI 服务配置
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              配置 Claude 和 OpenAI API 密钥及自定义端点
-            </Typography>
+          <Typography variant="h6" gutterBottom fontWeight={600}>
+            AI 服务配置
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            配置 Claude 和 OpenAI API 密钥及自定义端点
+          </Typography>
 
-            <Grid container spacing={3}>
-              <Grid size={12}>
-                <FormControl fullWidth>
-                  <InputLabel>默认 AI 服务</InputLabel>
-                  <Select
-                    value={settings.defaultAiService}
-                    label="默认 AI 服务"
-                    onChange={handleSelectChange('defaultAiService')}
-                  >
-                    <MenuItem value="claude">Claude (Anthropic)</MenuItem>
-                    <MenuItem value="openai">OpenAI (GPT)</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid size={12}>
-                <Divider sx={{ my: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Claude (Anthropic)
-                  </Typography>
-                </Divider>
-              </Grid>
-
-              <Grid size={12}>
-                <TextField
-                  fullWidth
-                  label="Anthropic API Key"
-                  type={showPassword['anthropicApiKey'] ? 'text' : 'password'}
-                  value={settings.anthropicApiKey}
-                  onChange={handleInputChange('anthropicApiKey')}
-                  placeholder="sk-ant-..."
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => togglePasswordVisibility('anthropicApiKey')}
-                          edge="end"
-                        >
-                          {showPassword['anthropicApiKey'] ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <TextField
-                  fullWidth
-                  label="Anthropic Base URL (可选)"
-                  value={settings.anthropicBaseUrl}
-                  onChange={handleInputChange('anthropicBaseUrl')}
-                  placeholder="https://api.anthropic.com"
-                  helperText="留空使用官方 API 端点，或输入自定义端点地址"
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <Divider sx={{ my: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    OpenAI
-                  </Typography>
-                </Divider>
-              </Grid>
-
-              <Grid size={12}>
-                <TextField
-                  fullWidth
-                  label="OpenAI API Key"
-                  type={showPassword['openaiApiKey'] ? 'text' : 'password'}
-                  value={settings.openaiApiKey}
-                  onChange={handleInputChange('openaiApiKey')}
-                  placeholder="sk-..."
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => togglePasswordVisibility('openaiApiKey')}
-                          edge="end"
-                        >
-                          {showPassword['openaiApiKey'] ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <TextField
-                  fullWidth
-                  label="OpenAI Base URL (可选)"
-                  value={settings.openaiBaseUrl}
-                  onChange={handleInputChange('openaiBaseUrl')}
-                  placeholder="https://api.openai.com/v1"
-                  helperText="留空使用官方 API 端点，或输入自定义端点地址 (如兼容 API)"
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<Save />}
-                    onClick={saveApiSettings}
-                    size="large"
-                  >
-                    保存 API 设置
-                  </Button>
-                </Box>
-              </Grid>
+          <Grid container spacing={3}>
+            <Grid size={12}>
+              <FormControl fullWidth>
+                <InputLabel>默认 AI 服务</InputLabel>
+                <Select
+                  value={settings.defaultAiService}
+                  label="默认 AI 服务"
+                  onChange={handleSelectChange('defaultAiService')}
+                >
+                  <MenuItem value="claude">Claude (Anthropic)</MenuItem>
+                  <MenuItem value="openai">OpenAI (GPT)</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
-          </TabPanel>
 
-          {/* Auth Settings Tab */}
-          <TabPanel value={tabValue} index={1}>
-            <Typography variant="h6" gutterBottom fontWeight={600}>
-              登录认证
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              设置系统管理员用户名和密码
-            </Typography>
-
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              <Typography variant="body2" fontWeight={600} gutterBottom>
-                重要提示
-              </Typography>
-              <Typography variant="body2">
-                设置密码后，您需要使用用户名和密码登录才能访问系统。请务必记住您的登录凭据。
-              </Typography>
-            </Alert>
-
-            <Grid container spacing={3}>
-              <Grid size={12}>
-                <TextField
-                  fullWidth
-                  label="用户名"
-                  value={settings.username}
-                  onChange={handleInputChange('username')}
-                  placeholder="admin"
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <TextField
-                  fullWidth
-                  label="新密码"
-                  type={showPassword['password'] ? 'text' : 'password'}
-                  value={settings.password}
-                  onChange={handleInputChange('password')}
-                  placeholder="输入新密码"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => togglePasswordVisibility('password')}
-                          edge="end"
-                        >
-                          {showPassword['password'] ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <TextField
-                  fullWidth
-                  label="确认密码"
-                  type={showPassword['confirmPassword'] ? 'text' : 'password'}
-                  value={settings.confirmPassword}
-                  onChange={handleInputChange('confirmPassword')}
-                  placeholder="再次输入密码"
-                  error={settings.password !== settings.confirmPassword && settings.confirmPassword !== ''}
-                  helperText={
-                    settings.password !== settings.confirmPassword && settings.confirmPassword !== ''
-                      ? '密码不匹配'
-                      : ''
-                  }
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => togglePasswordVisibility('confirmPassword')}
-                          edge="end"
-                        >
-                          {showPassword['confirmPassword'] ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<Save />}
-                    onClick={saveAuthSettings}
-                    size="large"
-                  >
-                    保存认证设置
-                  </Button>
-                </Box>
-              </Grid>
+            <Grid size={12}>
+              <Divider sx={{ my: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Claude (Anthropic)
+                </Typography>
+              </Divider>
             </Grid>
-          </TabPanel>
+
+            <Grid size={12}>
+              <TextField
+                fullWidth
+                label="Anthropic API Key"
+                type={showPassword['anthropicApiKey'] ? 'text' : 'password'}
+                value={settings.anthropicApiKey}
+                onChange={handleInputChange('anthropicApiKey')}
+                placeholder="sk-ant-..."
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => togglePasswordVisibility('anthropicApiKey')}
+                        edge="end"
+                      >
+                        {showPassword['anthropicApiKey'] ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid size={12}>
+              <TextField
+                fullWidth
+                label="Anthropic Base URL (可选)"
+                value={settings.anthropicBaseUrl}
+                onChange={handleInputChange('anthropicBaseUrl')}
+                placeholder="https://api.anthropic.com"
+                helperText="留空使用官方 API 端点，或输入自定义端点地址"
+              />
+            </Grid>
+
+            <Grid size={12}>
+              <Divider sx={{ my: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  OpenAI
+                </Typography>
+              </Divider>
+            </Grid>
+
+            <Grid size={12}>
+              <TextField
+                fullWidth
+                label="OpenAI API Key"
+                type={showPassword['openaiApiKey'] ? 'text' : 'password'}
+                value={settings.openaiApiKey}
+                onChange={handleInputChange('openaiApiKey')}
+                placeholder="sk-..."
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => togglePasswordVisibility('openaiApiKey')}
+                        edge="end"
+                      >
+                        {showPassword['openaiApiKey'] ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid size={12}>
+              <TextField
+                fullWidth
+                label="OpenAI Base URL (可选)"
+                value={settings.openaiBaseUrl}
+                onChange={handleInputChange('openaiBaseUrl')}
+                placeholder="https://api.openai.com/v1"
+                helperText="留空使用官方 API 端点，或输入自定义端点地址 (如兼容 API)"
+              />
+            </Grid>
+
+            <Grid size={12}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<Save />}
+                  onClick={saveApiSettings}
+                  size="large"
+                >
+                  保存 API 设置
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
 

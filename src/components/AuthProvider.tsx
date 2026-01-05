@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 
 export interface AuthContextType {
   isAuthenticated: boolean;
-  hasPassword: boolean;
   loading: boolean;
   checkAuth: () => Promise<void>;
+  // 建议：既然定义了 hasPassword，这里应该暴露出去
+  hasPassword: boolean; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,7 +27,11 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasPassword, setHasPassword] = useState(false);
+  
+  // 冲突已解决：保留了 hasPassword 状态定义
+  // 用于判断系统是否已设置密码
+  const [hasPassword, setHasPassword] = useState(false); 
+  
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
 
@@ -36,7 +41,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         const data = await response.json();
         setIsAuthenticated(!!data.auth?.authenticated);
-        setHasPassword(!!data.auth?.hasPassword);
+        
+        // 建议：在这里更新 hasPassword 的状态，否则默认值永远是 false
+        if (data.auth?.hasPassword !== undefined) {
+            setHasPassword(!!data.auth?.hasPassword);
+        }
       }
     } catch (error) {
       console.error('Failed to check auth status:', error);
@@ -50,7 +59,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [pathname]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, hasPassword, loading, checkAuth }}>
+    // 更新 value，将 hasPassword 传递给下层组件
+    <AuthContext.Provider value={{ isAuthenticated, loading, checkAuth, hasPassword }}>
       {children}
     </AuthContext.Provider>
   );

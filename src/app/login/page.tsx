@@ -101,7 +101,7 @@ function LoginPageContent() {
 
               {!hasPassword && (
                 <Alert severity="info">
-                  系统检测到您还未设置登录密码。首次使用时，系统会自动引导您设置密码。
+                  系统检测到您尚未配置环境变量中的登录密码，请先在 .env 中设置 ADMIN_PASSWORD。
                 </Alert>
               )}
 

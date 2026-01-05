@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 const SETTINGS_FILE = path.join(process.cwd(), 'data', 'settings.json');
+const AUTH_COOKIE = 'auth_session';
 
 interface Settings {
   api?: {
@@ -49,9 +50,10 @@ function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const settings = await loadSettings();
+    const authCookie = request.cookies.get(AUTH_COOKIE)?.value;
 
     // Don't expose sensitive data
     const safeSettings = {
@@ -65,6 +67,7 @@ export async function GET() {
       auth: {
         username: settings.auth?.username || 'admin',
         hasPassword: !!settings.auth?.passwordHash,
+        authenticated: authCookie === 'authenticated',
       },
     };
 
@@ -79,10 +82,27 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const authCookie = request.cookies.get(AUTH_COOKIE)?.value;
     const body = await request.json();
     const { type } = body;
 
     const settings = await loadSettings();
+    const hasPassword = !!settings.auth?.passwordHash;
+    const isAuthenticated = authCookie === 'authenticated';
+
+    if (hasPassword && !isAuthenticated) {
+      return NextResponse.json(
+        { error: '未登录，无法修改设置。' },
+        { status: 401 }
+      );
+    }
+
+    if (!hasPassword && type !== 'auth') {
+      return NextResponse.json(
+        { error: '请先设置登录账户。' },
+        { status: 403 }
+      );
+    }
 
     if (type === 'api') {
       settings.api = {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Container,
   Card,
@@ -66,7 +67,16 @@ interface SettingsData {
   confirmPassword: string;
 }
 
+interface SettingsResponse {
+  auth?: {
+    username?: string;
+    hasPassword?: boolean;
+    authenticated?: boolean;
+  };
+}
+
 export default function SettingsPage() {
+  const router = useRouter();
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -103,6 +113,32 @@ export default function SettingsPage() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (!response.ok) {
+          return;
+        }
+        const data = (await response.json()) as SettingsResponse;
+
+        if (data.auth?.hasPassword && !data.auth?.authenticated) {
+          router.replace('/login');
+          return;
+        }
+
+        setSettings(prev => ({
+          ...prev,
+          username: data.auth?.username || prev.username,
+        }));
+      } catch {
+        // Ignore settings fetch errors to avoid blocking UI.
+      }
+    };
+
+    loadSettings();
+  }, [router]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);

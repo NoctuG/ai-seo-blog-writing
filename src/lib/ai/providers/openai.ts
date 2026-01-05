@@ -38,7 +38,6 @@ export class OpenAIProvider {
         ],
         temperature: 0.7,
         max_tokens: 4096,
-        search: connectToWeb,
       });
 
       const content = response.choices[0]?.message?.content;

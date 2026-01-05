@@ -71,6 +71,7 @@ export default function ArticleGenerator() {
     setFormData({
       ...formData,
       cms: {
+        provider: 'wordpress',
         ...formData.cms,
         defaultTags: tags,
       },
@@ -284,6 +285,7 @@ export default function ArticleGenerator() {
                 setFormData({
                   ...formData,
                   cms: {
+                    provider: 'wordpress',
                     ...formData.cms,
                     siteUrl: e.target.value,
                   },
@@ -305,6 +307,7 @@ export default function ArticleGenerator() {
                   setFormData({
                     ...formData,
                     cms: {
+                      provider: 'wordpress',
                       ...formData.cms,
                       username: e.target.value,
                     },
@@ -325,6 +328,7 @@ export default function ArticleGenerator() {
                   setFormData({
                     ...formData,
                     cms: {
+                      provider: 'wordpress',
                       ...formData.cms,
                       applicationPassword: e.target.value,
                     },
@@ -346,6 +350,7 @@ export default function ArticleGenerator() {
                   setFormData({
                     ...formData,
                     cms: {
+                      provider: 'wordpress',
                       ...formData.cms,
                       defaultStatus: e.target.value as any,
                     },
@@ -370,6 +375,7 @@ export default function ArticleGenerator() {
                   setFormData({
                     ...formData,
                     cms: {
+                      provider: 'wordpress',
                       ...formData.cms,
                       defaultCategory: e.target.value,
                     },

@@ -1,4 +1,5 @@
- main
+'use client';
+
 import Link from 'next/link';
 import {
   Box,
@@ -31,7 +32,8 @@ const tools = [
     href: '/articles',
     icon: Article,
   },
-main
+];
+
 export default function ToolsPage() {
   return (
     <Box sx={{ py: { xs: 6, md: 10 } }}>
@@ -77,7 +79,7 @@ export default function ToolsPage() {
                           {tool.description}
                         </Typography>
                       </Box>
-                      <Button component={Link} href={tool.href} variant="contained">
+                      <Button component={Link} href={tool.href} variant="contained" aria-label={`打开${tool.title}`}>
                         打开
                       </Button>
                     </Stack>

@@ -36,8 +36,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "NEXT_PUBLIC_SITE_URL": "@site-url"
-  }
+  ]
 }

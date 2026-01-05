@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Box,
@@ -77,7 +79,7 @@ export default function ToolsPage() {
                           {tool.description}
                         </Typography>
                       </Box>
-                      <Button component={Link} href={tool.href} variant="contained">
+                      <Button component={Link} href={tool.href} variant="contained" aria-label={`打开${tool.title}`}>
                         打开
                       </Button>
                     </Stack>

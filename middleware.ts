@@ -1,26 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { getAuthConfig } from '@/lib/auth';
 
 const AUTH_COOKIE = 'auth_session';
-const SETTINGS_FILE = path.join(process.cwd(), 'data', 'settings.json');
-
-interface Settings {
-  auth?: {
-    passwordHash?: string;
-  };
-}
-
-async function hasPassword(): Promise<boolean> {
-  try {
-    const data = await fs.readFile(SETTINGS_FILE, 'utf-8');
-    const settings: Settings = JSON.parse(data);
-    return !!settings.auth?.passwordHash;
-  } catch {
-    return false;
-  }
-}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -29,25 +11,15 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname === '/favicon.ico' ||
-    pathname.startsWith('/api/auth/login')
+    pathname.startsWith('/api/auth/login') ||
+    (pathname.startsWith('/api/settings') && request.method === 'GET')
   ) {
     return NextResponse.next();
   }
 
   const authCookie = request.cookies.get(AUTH_COOKIE)?.value;
   const isAuthenticated = authCookie === 'authenticated';
-  const passwordExists = await hasPassword();
-
-  // 如果还没有设置密码，只允许访问设置页面和相关API
-  if (!passwordExists) {
-    if (pathname === '/settings' || pathname.startsWith('/api/settings')) {
-      return NextResponse.next();
-    }
-    // 重定向到设置页面进行初始化
-    const settingsUrl = request.nextUrl.clone();
-    settingsUrl.pathname = '/settings';
-    return NextResponse.redirect(settingsUrl);
-  }
+  const { hasPassword } = getAuthConfig();
 
   // 已设置密码后的逻辑
   // 登录页面在已登录时重定向到首页
@@ -61,7 +33,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 已登录用户可以访问所有页面
-  if (isAuthenticated) {
+  if (isAuthenticated && hasPassword) {
     return NextResponse.next();
   }
 

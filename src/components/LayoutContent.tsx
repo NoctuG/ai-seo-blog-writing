@@ -7,10 +7,10 @@ import config from '@/lib/config';
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isAuthenticated, hasPassword } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   // 不显示导航栏的页面
-  const hideNavbar = pathname === '/login' || (pathname === '/settings' && !hasPassword);
+  const hideNavbar = pathname === '/login';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

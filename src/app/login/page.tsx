@@ -100,9 +100,8 @@ function LoginPageContent() {
               </Box>
 
               {!hasPassword && (
-                <Alert severity="warning">
-                  还未设置登录密码，请先前往{' '}
-                  <Link href="/settings">设置</Link> 页面配置。
+                <Alert severity="info">
+                  系统检测到您还未设置登录密码。首次使用时，系统会自动引导您设置密码。
                 </Alert>
               )}
 

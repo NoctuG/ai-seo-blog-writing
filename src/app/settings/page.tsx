@@ -123,11 +123,6 @@ export default function SettingsPage() {
         }
         const data = (await response.json()) as SettingsResponse;
 
-        if (data.auth?.hasPassword && !data.auth?.authenticated) {
-          router.replace('/login');
-          return;
-        }
-
         setSettings(prev => ({
           ...prev,
           username: data.auth?.username || prev.username,
@@ -138,7 +133,7 @@ export default function SettingsPage() {
     };
 
     loadSettings();
-  }, [router]);
+  }, []);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -226,6 +221,11 @@ export default function SettingsPage() {
     }
 
     try {
+      // 检查是否是首次设置密码
+      const settingsResponse = await fetch('/api/settings');
+      const settingsData = (await settingsResponse.json()) as SettingsResponse;
+      const isFirstTimeSetup = !settingsData.auth?.hasPassword;
+
       const response = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -242,11 +242,25 @@ export default function SettingsPage() {
           password: '',
           confirmPassword: '',
         }));
-        setSnackbar({
-          open: true,
-          message: '认证设置已保存',
-          severity: 'success',
-        });
+
+        if (isFirstTimeSetup) {
+          // 首次设置密码，显示提示并跳转到登录页
+          setSnackbar({
+            open: true,
+            message: '密码设置成功！正在跳转到登录页面...',
+            severity: 'success',
+          });
+          setTimeout(() => {
+            router.push('/login');
+          }, 1500);
+        } else {
+          // 修改密码
+          setSnackbar({
+            open: true,
+            message: '认证设置已保存',
+            severity: 'success',
+          });
+        }
       } else {
         throw new Error('Failed to save settings');
       }
@@ -422,8 +436,13 @@ export default function SettingsPage() {
               设置系统管理员用户名和密码
             </Typography>
 
-            <Alert severity="info" sx={{ mb: 3 }}>
-              这些凭据将用于保护系统设置和敏感操作
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              <Typography variant="body2" fontWeight={600} gutterBottom>
+                重要提示
+              </Typography>
+              <Typography variant="body2">
+                设置密码后，您需要使用用户名和密码登录才能访问系统。请务必记住您的登录凭据。
+              </Typography>
             </Alert>
 
             <Grid container spacing={3}>

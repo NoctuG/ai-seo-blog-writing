@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import config from '@/lib/config';
 import ThemeRegistry from '@/components/ThemeRegistry';
-import NavigationBar from '@/components/NavigationBar';
+import LayoutContent from '@/components/LayoutContent';
 
 export const metadata: Metadata = {
   title: {
@@ -54,25 +54,7 @@ export default function RootLayout({
     <html lang={config.site.language}>
       <body>
         <ThemeRegistry>
-          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <NavigationBar />
-            <main style={{ flex: 1 }}>
-              {children}
-            </main>
-            <footer style={{
-              borderTop: '1px solid #e0e0e0',
-              padding: '24px',
-              textAlign: 'center',
-              backgroundColor: '#fafafa',
-            }}>
-              <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
-                &copy; {new Date().getFullYear()} {config.site.name}. All rights reserved.
-              </p>
-              <p style={{ margin: '8px 0 0', color: '#888', fontSize: '12px' }}>
-                AI驱动的SEO博客生成系统
-              </p>
-            </footer>
-          </div>
+          <LayoutContent>{children}</LayoutContent>
         </ThemeRegistry>
       </body>
     </html>

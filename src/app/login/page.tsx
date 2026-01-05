@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -22,7 +22,7 @@ interface SettingsResponse {
   };
 }
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [username, setUsername] = useState('');
@@ -145,5 +145,13 @@ export default function LoginPage() {
         </Card>
       </Container>
     </Box>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<Box sx={{ py: { xs: 6, md: 10 } }} />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

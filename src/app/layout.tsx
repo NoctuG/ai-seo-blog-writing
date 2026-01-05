@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import config from '@/lib/config';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import NavigationBar from '@/components/NavigationBar';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: {
@@ -55,7 +52,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang={config.site.language}>
-      <body className={inter.className}>
+      <body>
         <ThemeRegistry>
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <NavigationBar />

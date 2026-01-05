@@ -42,7 +42,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const contentHtml = marked(article.content);
+  const contentHtml = await marked(article.content);
 
   return (
     <div className="container mx-auto px-4 py-12">

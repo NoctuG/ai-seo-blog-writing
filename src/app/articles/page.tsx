@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { loadAllArticles, formatDate, estimateReadingTime } from '@/utils/article';
+import { loadAllArticles } from '@/lib/storage/articles';
+import { formatDate, estimateReadingTime } from '@/utils/article';
 
 export const metadata = {
   title: '文章列表',

@@ -7,13 +7,16 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  Container,
+  Divider,
+  Grid,
+  IconButton,
+  InputAdornment,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import GoogleIcon from '@mui/icons-material/Google';
 
 interface SettingsResponse {
   auth?: {
@@ -25,11 +28,12 @@ interface SettingsResponse {
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [hasPassword, setHasPassword] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const redirectTarget = useMemo(() => searchParams.get('next') || '/', [searchParams]);
 
@@ -41,7 +45,7 @@ function LoginPageContent() {
           return;
         }
         const data = (await response.json()) as SettingsResponse;
-        setUsername(data.auth?.username || 'admin');
+        setEmail(data.auth?.username || 'admin');
         setHasPassword(!!data.auth?.hasPassword);
       } catch {
         // Ignore settings fetch errors to avoid blocking login UI.
@@ -55,8 +59,13 @@ function LoginPageContent() {
     event.preventDefault();
     setError('');
 
-    if (!username || !password) {
-      setError('请输入用户名和密码。');
+    if (!email || !password) {
+      setError('Please enter your email and password.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
       return;
     }
 
@@ -67,89 +76,316 @@ function LoginPageContent() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: email, password }),
       });
 
       if (!response.ok) {
         const data = (await response.json()) as { error?: string };
-        setError(data.error || '登录失败，请检查用户名和密码。');
+        setError(data.error || 'Login failed. Please check your credentials.');
         setLoading(false);
         return;
       }
 
       router.replace(redirectTarget);
     } catch {
-      setError('登录失败，请稍后再试。');
+      setError('Login failed. Please try again later.');
       setLoading(false);
     }
   };
 
+  const handleGoogleLogin = () => {
+    // Placeholder for Google OAuth integration
+    setError('Google login is not configured yet.');
+  };
+
   return (
-    <Box sx={{ py: { xs: 6, md: 10 } }}>
-      <Container maxWidth="sm">
-        <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-          <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-            <Stack spacing={3}>
-              <Box textAlign="center">
-                <Typography variant="h4" fontWeight={700} gutterBottom>
-                  登录
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  请输入用户名与密码访问主页
-                </Typography>
-              </Box>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Left Panel - Purple Gradient with Illustration */}
+      <Box
+        sx={{
+          flex: 1,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          display: { xs: 'none', md: 'flex' },
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          p: 6,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Logo */}
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: 'white',
+              letterSpacing: '0.5px',
+            }}
+          >
+            SEO<span style={{ color: '#ffd700' }}>WRITING</span>.AI
+          </Typography>
+        </Box>
 
-              {!hasPassword && (
-                <Alert severity="info">
-                  系统检测到您尚未配置环境变量中的登录密码，请先在 .env 中设置 ADMIN_PASSWORD。
-                </Alert>
-              )}
+        {/* Illustration Placeholder */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flex: 1,
+          }}
+        >
+          <Box
+            sx={{
+              width: '400px',
+              height: '400px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: '120px',
+                color: 'rgba(255, 255, 255, 0.3)',
+              }}
+            >
+              ✍️
+            </Typography>
+          </Box>
+        </Box>
 
-              {error && <Alert severity="error">{error}</Alert>}
+        {/* Tagline */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 600,
+              color: 'white',
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            }}
+          >
+            Your super agent for
+            <br />
+            content creation
+          </Typography>
+        </Box>
+      </Box>
 
-              <Box component="form" onSubmit={handleSubmit} noValidate>
-                <Stack spacing={2.5}>
+      {/* Right Panel - Login Form */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: { xs: 3, md: 6 },
+          backgroundColor: '#fafafa',
+        }}
+      >
+        <Box sx={{ width: '100%', maxWidth: 450 }}>
+          <Stack spacing={4}>
+            {/* Header */}
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  mb: 1,
+                  color: '#1a1a1a',
+                }}
+              >
+                Sign in to your account
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Welcome back to the SeoWriting.AI
+              </Typography>
+            </Box>
+
+            {/* Google Login Button */}
+            <Button
+              variant="outlined"
+              size="large"
+              fullWidth
+              startIcon={<GoogleIcon />}
+              onClick={handleGoogleLogin}
+              sx={{
+                py: 1.5,
+                borderColor: '#dadce0',
+                color: '#3c4043',
+                textTransform: 'none',
+                fontSize: '15px',
+                fontWeight: 500,
+                '&:hover': {
+                  borderColor: '#dadce0',
+                  backgroundColor: '#f8f9fa',
+                },
+              }}
+            >
+              Log in with Google
+            </Button>
+
+            {/* Divider */}
+            <Divider sx={{ color: 'text.secondary' }}>Or use Email</Divider>
+
+            {/* Alerts */}
+            {!hasPassword && (
+              <Alert severity="info">
+                Password not configured. Please set ADMIN_PASSWORD in .env file.
+              </Alert>
+            )}
+
+            {error && <Alert severity="error">{error}</Alert>}
+
+            {/* Login Form */}
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <Stack spacing={3}>
+                {/* Email Field */}
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 500,
+                      color: '#1a1a1a',
+                    }}
+                  >
+                    Email
+                  </Typography>
                   <TextField
-                    label="用户名"
-                    name="username"
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value)}
-                    autoComplete="username"
+                    placeholder="name@example.com"
+                    name="email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    autoComplete="email"
                     fullWidth
                     required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'white',
+                      },
+                    }}
                   />
+                </Box>
+
+                {/* Password Field */}
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 500,
+                      color: '#1a1a1a',
+                    }}
+                  >
+                    Password
+                  </Typography>
                   <TextField
-                    label="密码"
+                    placeholder="8+ characters required"
                     name="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     autoComplete="current-password"
                     fullWidth
                     required
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'white',
+                      },
+                    }}
                   />
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    disabled={loading || !hasPassword}
-                    sx={{ py: 1.2, fontWeight: 600 }}
+                </Box>
+
+                {/* Forgot Password Link */}
+                <Box sx={{ textAlign: 'right' }}>
+                  <Link
+                    href="#"
+                    style={{
+                      color: '#667eea',
+                      textDecoration: 'none',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    }}
                   >
-                    {loading ? '登录中...' : '登录'}
-                  </Button>
-                </Stack>
-              </Box>
-            </Stack>
-          </CardContent>
-        </Card>
-      </Container>
+                    Forgot your password
+                  </Link>
+                </Box>
+
+                {/* Sign In Button */}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  disabled={loading || !hasPassword}
+                  sx={{
+                    py: 1.5,
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    textTransform: 'none',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #5568d3 0%, #6a3f91 100%)',
+                    },
+                  }}
+                >
+                  {loading ? 'Signing in...' : 'Sign in'}
+                </Button>
+              </Stack>
+            </Box>
+
+            {/* Sign Up Link */}
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="body2" color="text.secondary">
+                No Account yet?{' '}
+                <Link
+                  href="#"
+                  style={{
+                    color: '#667eea',
+                    textDecoration: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Sign Up
+                </Link>
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
+      </Box>
     </Box>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<Box sx={{ py: { xs: 6, md: 10 } }} />}>
+    <Suspense fallback={<Box sx={{ minHeight: '100vh' }} />}>
       <LoginPageContent />
     </Suspense>
   );

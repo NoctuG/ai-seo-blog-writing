@@ -1,4 +1,5 @@
 import Link from 'next/link';
+// 采纳 Codex 分支：引入分页逻辑所需的函数
 import { loadArticlesPage, formatDate } from '@/utils/article';
 
 export const metadata = {
@@ -14,9 +15,13 @@ interface ArticlesPageProps {
 }
 
 export default async function ArticlesPage({ searchParams }: ArticlesPageProps) {
+  // 分页参数处理逻辑
   const page = Number(searchParams?.page ?? '1');
   const limit = Number(searchParams?.limit ?? '12');
+  
+  // 调用分页接口
   const { articles, total } = await loadArticlesPage(page, limit);
+  
   const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 12;
   const currentPage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
   const totalPages = Math.max(1, Math.ceil(total / safeLimit));
@@ -55,6 +60,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
           </div>
         )}
 
+        {/* 分页控制条 */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-4 mt-10">
             <Link

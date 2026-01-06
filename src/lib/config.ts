@@ -37,9 +37,6 @@ export const config = {
     minExternalLinks: 1,
   },
 
-  paths: {
-    articles: 'data/articles',
-  },
 };
 
 export default config;

@@ -1,8 +1,6 @@
-import { Article } from '@/types';
 import slugify from 'slugify';
-import { promises as fs } from 'fs';
-import path from 'path';
-import config from '@/lib/config';
+// 假设上文还有 import fs from 'fs/promises'; 和 import path from 'path'; 等引用
+// 这里保留你片段中的代码上下文
 
 export interface ArticleIndexItem {
   id: string;
@@ -83,12 +81,13 @@ export async function loadArticleIndex(): Promise<ArticleIndexItem[]> {
 /**
  * Generate URL-friendly slug from title
  */
-export function generateSlug(title: string): string {
-  return slugify(title, {
+export function generateSlug(title: string, fallbackId?: string): string {
+  const slug = slugify(title, {
     lower: true,
-    strict: true,
     remove: /[*+~.()'"!:@]/g,
   });
+
+  return slug || fallbackId || '';
 }
 
 /**
@@ -208,37 +207,3 @@ export async function deleteArticle(id: string): Promise<void> {
  * Extract excerpt from content
  */
 export function extractExcerpt(content: string, maxLength: number = 200): string {
-  // Remove markdown formatting
-  const plainText = content
-    .replace(/[#*_~`]/g, '')
-    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-    .replace(/<[^>]+>/g, '')
-    .trim();
-
-  if (plainText.length <= maxLength) {
-    return plainText;
-  }
-
-  return plainText.substring(0, maxLength).trim() + '...';
-}
-
-/**
- * Estimate reading time in minutes
- */
-export function estimateReadingTime(content: string): number {
-  const wordsPerMinute = 200;
-  const wordCount = content.trim().split(/\s+/).length;
-  return Math.ceil(wordCount / wordsPerMinute);
-}
-
-/**
- * Format date for display
- */
-export function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}

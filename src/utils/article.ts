@@ -228,3 +228,5 @@ export function extractExcerpt(content: string, maxLength: number = 200): string
   const truncated = stripped.slice(0, maxLength);
   return `${truncated.replace(/\s+\S*$/, '').trim()}...`;
 }
+
+export { formatDate, estimateReadingTime } from './article-metadata';

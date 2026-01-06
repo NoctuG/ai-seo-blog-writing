@@ -40,6 +40,11 @@ export async function middleware(request: NextRequest) {
   if (pathname === '/login') {
     // 如果已登录，重定向到 Dashboard
     if (isAuthenticated) {
+      const nextParam = request.nextUrl.searchParams.get('next');
+      if (nextParam) {
+        const nextUrl = new URL(nextParam, request.url);
+        return NextResponse.redirect(nextUrl);
+      }
       const dashUrl = request.nextUrl.clone();
       dashUrl.pathname = '/dash';
       return NextResponse.redirect(dashUrl);
@@ -58,6 +63,7 @@ export async function middleware(request: NextRequest) {
       // 未登录用户重定向到登录页
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/login';
+      loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
       return NextResponse.redirect(loginUrl);
     }
   }

@@ -84,7 +84,7 @@ export default function DashboardPage() {
 
         {/* Quick Stats */}
         <Grid container spacing={3} sx={{ mb: 6 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card
               elevation={0}
               sx={{
@@ -112,7 +112,7 @@ export default function DashboardPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card
               elevation={0}
               sx={{
@@ -137,7 +137,7 @@ export default function DashboardPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card
               elevation={0}
               sx={{
@@ -162,7 +162,7 @@ export default function DashboardPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card
               elevation={0}
               sx={{
@@ -197,7 +197,7 @@ export default function DashboardPage() {
             {dashboardCards.map((card, index) => {
               const Icon = card.icon;
               return (
-                <Grid item xs={12} sm={6} md={4} key={index}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                   <Card
                     elevation={0}
                     sx={{

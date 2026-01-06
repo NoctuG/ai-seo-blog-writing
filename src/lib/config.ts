@@ -28,6 +28,10 @@ export const config = {
     supportedLanguages: ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'],
   },
 
+  paths: {
+    articles: process.env.ARTICLES_PATH || 'data/articles',
+  },
+
   seo: {
     minKeywordDensity: 0.5,
     maxKeywordDensity: 2.5,

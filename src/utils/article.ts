@@ -1,6 +1,8 @@
+import fs from 'fs/promises';
+import path from 'path';
 import slugify from 'slugify';
-// 假设上文还有 import fs from 'fs/promises'; 和 import path from 'path'; 等引用
-// 这里保留你片段中的代码上下文
+import config from '@/lib/config';
+import { Article } from '@/types';
 
 export interface ArticleIndexItem {
   id: string;
@@ -207,3 +209,60 @@ export async function deleteArticle(id: string): Promise<void> {
  * Extract excerpt from content
  */
 export function extractExcerpt(content: string, maxLength: number = 200): string {
+  if (!content) {
+    return '';
+  }
+
+  const stripped = content
+    .replace(/!\[[^\]]*]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)]\([^)]*\)/g, '$1')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[`*_>#~=-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (stripped.length <= maxLength) {
+    return stripped;
+  }
+
+  const truncated = stripped.slice(0, maxLength);
+  return `${truncated.replace(/\s+\S*$/, '').trim()}...`;
+}
+
+/**
+ * Format publish date for display
+ */
+export function formatDate(dateString: string): string {
+  if (!dateString) {
+    return '';
+  }
+
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) {
+    return dateString;
+  }
+
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+/**
+ * Estimate reading time (minutes) based on content length
+ */
+export function estimateReadingTime(content: string): number {
+  if (!content) {
+    return 1;
+  }
+
+  const words = content
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean);
+  const minutes = Math.ceil(words.length / 200);
+  return Math.max(1, minutes);
+}

@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { loadAllArticles } from '@/utils/article';
+import { loadAllArticles } from '@/lib/storage/articles';
 import config from '@/lib/config';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

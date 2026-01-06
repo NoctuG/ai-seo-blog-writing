@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { marked } from 'marked';
-import { loadArticleBySlug, formatDate, estimateReadingTime } from '@/utils/article';
+import { loadArticleBySlug } from '@/lib/storage/articles';
+import { formatDate, estimateReadingTime } from '@/utils/article';
 import SEOScoreCard from '@/components/SEOScoreCard';
 
 interface ArticlePageProps {

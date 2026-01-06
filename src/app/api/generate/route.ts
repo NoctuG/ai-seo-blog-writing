@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAIService } from '@/lib/ai';
 import { SEOAnalyzer } from '@/lib/seo/analyzer';
 import { MetadataGenerator } from '@/lib/seo/metadata';
-import { generateSlug, generateArticleId, saveArticle } from '@/utils/article';
+import { generateSlug, generateArticleId } from '@/utils/article';
+import { saveArticle } from '@/lib/storage/articles';
 import { Article, ContentGenerationRequest } from '@/types';
 
 const normalizeBaseUrl = (url?: string) => url?.replace(/\/+$/, '');

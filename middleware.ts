@@ -6,7 +6,6 @@ const AUTH_COOKIE = 'auth_session';
 
 // 定义公开页面（不需要登录即可访问）
 const PUBLIC_PATHS = [
-  '/',           // 首页
   '/login',      // 登录页
 ];
 
@@ -39,13 +38,28 @@ export async function middleware(request: NextRequest) {
 
   // 登录页面的处理
   if (pathname === '/login') {
-    // 如果已登录，重定向到首页
+    // 如果已登录，重定向到 Dashboard
     if (isAuthenticated) {
-      const homeUrl = request.nextUrl.clone();
-      homeUrl.pathname = '/';
-      return NextResponse.redirect(homeUrl);
+      const dashUrl = request.nextUrl.clone();
+      dashUrl.pathname = '/dash';
+      return NextResponse.redirect(dashUrl);
     }
     return NextResponse.next();
+  }
+
+  // 首页 '/' 的处理 - 将其作为入口重定向
+  if (pathname === '/') {
+    if (isAuthenticated) {
+      // 已登录用户重定向到 Dashboard
+      const dashUrl = request.nextUrl.clone();
+      dashUrl.pathname = '/dash';
+      return NextResponse.redirect(dashUrl);
+    } else {
+      // 未登录用户重定向到登录页
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/login';
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   // 检查是否是公开页面

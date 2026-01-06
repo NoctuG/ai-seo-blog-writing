@@ -151,7 +151,7 @@ export default function EditorPage() {
       <header className="sticky top-0 z-10 border-b bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-3">
           <div className="flex items-center gap-3">
-            <Link href="/" className="text-sm font-semibold text-slate-600 hover:text-slate-900">
+            <Link href="/dash" className="text-sm font-semibold text-slate-600 hover:text-slate-900">
               ← 返回
             </Link>
             <span className="text-xs text-slate-400">自动保存</span>

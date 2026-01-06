@@ -7,12 +7,13 @@ import config from '@/lib/config';
 /**
  * Generate URL-friendly slug from title
  */
-export function generateSlug(title: string): string {
-  return slugify(title, {
+export function generateSlug(title: string, fallbackId?: string): string {
+  const slug = slugify(title, {
     lower: true,
-    strict: true,
     remove: /[*+~.()'"!:@]/g,
   });
+
+  return slug || fallbackId || '';
 }
 
 /**

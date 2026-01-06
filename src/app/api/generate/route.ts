@@ -104,8 +104,10 @@ export async function POST(request: NextRequest) {
     const titleMatch = content.match(/^#\s+(.+)$/m);
     const title = titleMatch ? titleMatch[1] : body.topic;
 
+    const articleId = generateArticleId();
+
     // Generate slug
-    const slug = generateSlug(title);
+    const slug = generateSlug(title, articleId);
 
     // Extract description
     const descriptionMatch = content.match(/##\s+简介\n+([\s\S]+?)(?=\n##|$)/);
@@ -116,7 +118,7 @@ export async function POST(request: NextRequest) {
     // Create article object
     const now = new Date().toISOString();
     const article: Article = {
-      id: generateArticleId(),
+      id: articleId,
       title,
       slug,
       description,

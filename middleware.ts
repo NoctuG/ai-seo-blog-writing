@@ -20,7 +20,7 @@ const PROTECTED_PATHS = [
 ];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
   // 定义始终允许的系统路径和 API
   if (
@@ -82,7 +82,7 @@ export async function middleware(request: NextRequest) {
     if (!hasPassword) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/login';
-      loginUrl.searchParams.set('next', pathname);
+      loginUrl.searchParams.set('next', pathname + search);
       return NextResponse.redirect(loginUrl);
     }
 
@@ -90,7 +90,7 @@ export async function middleware(request: NextRequest) {
     if (!isAuthenticated) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/login';
-      loginUrl.searchParams.set('next', pathname);
+      loginUrl.searchParams.set('next', pathname + search);
       return NextResponse.redirect(loginUrl);
     }
 

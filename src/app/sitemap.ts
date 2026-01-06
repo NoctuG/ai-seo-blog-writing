@@ -1,13 +1,13 @@
 import { MetadataRoute } from 'next';
-import { loadAllArticles } from '@/utils/article';
+import { loadArticleIndex } from '@/utils/article';
 import config from '@/lib/config';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const articles = await loadAllArticles();
+  const articles = await loadArticleIndex();
 
   const articleUrls = articles.map((article) => ({
     url: `${config.site.url}/articles/${article.slug}`,
-    lastModified: new Date(article.lastModified),
+    lastModified: new Date(article.publishDate),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }));

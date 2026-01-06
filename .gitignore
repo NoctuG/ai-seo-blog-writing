@@ -38,3 +38,4 @@ next-env.d.ts
 /public/articles
 /public/images/generated
 /data/articles/*.json
+!/data/articles/index.json

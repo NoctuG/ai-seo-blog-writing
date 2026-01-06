@@ -1,13 +1,15 @@
 import { MetadataRoute } from 'next';
-import { loadAllArticles } from '@/lib/storage/articles';
+// 采纳 Codex 分支：引入 loadArticleIndex 以匹配下方的函数调用
+import { loadArticleIndex } from '@/utils/article';
 import config from '@/lib/config';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const articles = await loadAllArticles();
+  // 这里使用了 loadArticleIndex，所以必须保留上面的对应 import
+  const articles = await loadArticleIndex();
 
   const articleUrls = articles.map((article) => ({
     url: `${config.site.url}/articles/${article.slug}`,
-    lastModified: new Date(article.lastModified),
+    lastModified: new Date(article.publishDate),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }));

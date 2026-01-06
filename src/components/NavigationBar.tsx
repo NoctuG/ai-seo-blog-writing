@@ -31,7 +31,7 @@ import {
 } from '@mui/icons-material';
 
 const navItems = [
-  { label: '首页', href: '/', icon: Home },
+  { label: '仪表盘', href: '/dash', icon: Home },
   { label: '生成文章', href: '/generate', icon: Create },
   { label: '文章列表', href: '/articles', icon: Article },
   { label: 'SEO工具', href: '/tools', icon: Build },
@@ -49,10 +49,11 @@ export default function NavigationBar() {
   };
 
   const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/';
+    // 对于顶级导航项进行精确匹配或前缀匹配
+    if (href === '/dash') {
+      return pathname === '/dash' || pathname.startsWith('/dash/');
     }
-    return pathname.startsWith(href);
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (
@@ -75,7 +76,7 @@ export default function NavigationBar() {
               <Typography
                 variant="h6"
                 component={Link}
-                href="/"
+                href="/dash"
                 sx={{
                   fontWeight: 700,
                   color: 'text.primary',

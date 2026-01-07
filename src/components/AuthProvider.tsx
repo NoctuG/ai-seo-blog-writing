@@ -28,9 +28,8 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // 冲突已解决：保留了 hasPassword 状态定义
-  // 用于判断系统是否已设置密码
-  const [hasPassword, setHasPassword] = useState(false); 
+  // 保留 hasPassword 状态定义，用于判断系统是否已设置密码
+  const [hasPassword, setHasPassword] = useState(true); 
   
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
@@ -42,9 +41,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const data = await response.json();
         setIsAuthenticated(!!data.auth?.authenticated);
         
-        // 建议：在这里更新 hasPassword 的状态，否则默认值永远是 false
+        // 建议：在这里更新 hasPassword 的状态
         if (data.auth?.hasPassword !== undefined) {
-            setHasPassword(!!data.auth?.hasPassword);
+          setHasPassword(!!data.auth?.hasPassword);
         }
       }
     } catch (error) {

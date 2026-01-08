@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 // 采纳 Codex 分支：引入支持分页的函数，以匹配下方的分页逻辑
 import { loadArticlesPage } from '@/utils/article';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const searchParams = request.nextUrl.searchParams;
     const page = Number(searchParams.get('page') ?? '1');
     const limit = Number(searchParams.get('limit') ?? '12');
     

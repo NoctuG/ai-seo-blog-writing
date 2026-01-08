@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 // 采纳 Codex 分支：引入支持分页的函数，以匹配下方的分页逻辑
 import { loadArticlesPage } from '@/utils/article';
 
+// 强制该API路由为动态渲染，避免静态构建时的searchParams错误
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

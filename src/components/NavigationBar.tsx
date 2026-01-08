@@ -49,6 +49,7 @@ export default function NavigationBar() {
   };
 
   const isActive = (href: string) => {
+    if (!pathname) return false;
     // 对于顶级导航项进行精确匹配或前缀匹配
     if (href === '/dash') {
       return pathname === '/dash' || pathname.startsWith('/dash/');

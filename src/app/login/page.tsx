@@ -35,7 +35,7 @@ function LoginPageContent() {
   const [hasPassword, setHasPassword] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
-  const redirectTarget = useMemo(() => searchParams.get('next') || '/dash', [searchParams]);
+  const redirectTarget = useMemo(() => searchParams?.get('next') || '/dash', [searchParams]);
 
   useEffect(() => {
     const loadSettings = async () => {

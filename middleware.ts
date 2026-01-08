@@ -7,28 +7,25 @@ const AUTH_COOKIE = 'auth_session';
 // 定义公开页面（不需要登录即可访问）
 const PUBLIC_PATHS = [
   '/login',      // 登录页
+  '/api/auth/login', // 登录API
 ];
 
-// 定义受保护的页面（必须登录才能访问）
-const PROTECTED_PATHS = [
-  '/generate',
-  '/editor',
-  '/dash',
-  '/articles',
-  '/settings',
-  '/tools',
+// 定义始终允许的系统路径
+const SYSTEM_PATHS = [
+  '/_next',
+  '/favicon.ico',
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  // 定义始终允许的系统路径和 API
-  if (
-    pathname.startsWith('/_next') ||
-    pathname === '/favicon.ico' ||
-    pathname.startsWith('/api/auth/login') ||
-    (pathname.startsWith('/api/settings') && request.method === 'GET')
-  ) {
+  // 始终允许系统路径和静态资源
+  if (SYSTEM_PATHS.some(path => pathname.startsWith(path))) {
+    return NextResponse.next();
+  }
+
+  // 允许GET请求访问设置API（用于检查是否已设置密码）
+  if (pathname.startsWith('/api/settings') && request.method === 'GET') {
     return NextResponse.next();
   }
 
@@ -36,9 +33,14 @@ export async function middleware(request: NextRequest) {
   const isAuthenticated = authCookie === 'authenticated';
   const { hasPassword } = getAuthConfig();
 
+  // 检查是否是公开路径
+  const isPublicPath = PUBLIC_PATHS.some(path =>
+    pathname === path || pathname.startsWith(`${path}/`)
+  );
+
   // 登录页面的处理
   if (pathname === '/login') {
-    // 如果已登录，重定向到 Dashboard
+    // 如果已登录，重定向到目标页面或 Dashboard
     if (isAuthenticated) {
       const nextParam = request.nextUrl.searchParams.get('next');
       if (nextParam) {
@@ -52,59 +54,29 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 首页 '/' 的处理 - 将其作为入口重定向
-  if (pathname === '/') {
-    if (isAuthenticated) {
-      // 已登录用户重定向到 Dashboard
-      const dashUrl = request.nextUrl.clone();
-      dashUrl.pathname = '/dash';
-      return NextResponse.redirect(dashUrl);
-    } else {
-      // 未登录用户重定向到登录页
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = '/login';
-      loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // 检查是否是公开页面
-  const isPublicPath = PUBLIC_PATHS.some(path =>
-    pathname === path || pathname.startsWith(`${path}/`)
-  );
-
-  // 如果是公开页面，允许访问
+  // 如果是公开路径，允许访问
   if (isPublicPath) {
     return NextResponse.next();
   }
 
-  // 对于受保护的页面，检查认证状态
-  const isProtectedPath = PROTECTED_PATHS.some(path =>
-    pathname === path || pathname.startsWith(`${path}/`)
-  );
-
-  if (isProtectedPath || !isPublicPath) {
-    // 如果没有设置密码，重定向到登录页并提示
-    if (!hasPassword) {
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = '/login';
-      loginUrl.searchParams.set('next', pathname + search);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // 如果设置了密码但未登录，重定向到登录页
-    if (!isAuthenticated) {
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = '/login';
-      loginUrl.searchParams.set('next', pathname + search);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // 已登录且设置了密码，允许访问
-    return NextResponse.next();
+  // 所有其他路径都需要认证保护
+  // 如果没有设置密码，重定向到登录页提示设置
+  if (!hasPassword) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/login';
+    loginUrl.searchParams.set('next', pathname + search);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // 默认允许访问其他页面
+  // 如果设置了密码但未登录，重定向到登录页
+  if (!isAuthenticated) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/login';
+    loginUrl.searchParams.set('next', pathname + search);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // 已登录且设置了密码，允许访问
   return NextResponse.next();
 }
 

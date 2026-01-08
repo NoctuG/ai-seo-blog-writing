@@ -17,20 +17,21 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   const hideNavbar = pathname === '/login';
 
   // 核心逻辑：路由保护
-  // 如果系统已设置密码(hasPassword)，但用户未登录且当前不在登录页，则强制跳转
+  // 所有页面都需要登录，未登录用户强制跳转到登录页
   useEffect(() => {
     if (loading) {
       return;
     }
 
-    if (hasPassword && !isAuthenticated && pathname !== '/login') {
+    // 如果未登录且不在登录页，重定向到登录页
+    if (!isAuthenticated && pathname !== '/login') {
       router.replace('/login');
     }
-  }, [hasPassword, isAuthenticated, loading, pathname, router]);
+  }, [isAuthenticated, loading, pathname, router]);
 
   // 防止未授权内容闪烁（Flash of Unauthenticated Content）
   // 在重定向发生前，暂时不渲染页面内容
-  if (hasPassword && !isAuthenticated && pathname !== '/login') {
+  if (!isAuthenticated && pathname !== '/login') {
     return null;
   }
 

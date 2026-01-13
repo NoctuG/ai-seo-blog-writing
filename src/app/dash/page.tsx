@@ -1,315 +1,206 @@
 'use client';
 
 import Link from 'next/link';
+import { Typography, Card, Row, Col, Statistic, Space, Button } from 'antd';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Grid,
-  Stack,
-  Typography,
-} from '@mui/material';
-import {
-  Article,
-  Edit,
-  Settings,
-  TrendingUp,
-  Analytics,
-  Add,
-} from '@mui/icons-material';
+  FileTextOutlined,
+  EditOutlined,
+  PlusOutlined,
+  ToolOutlined,
+  SettingOutlined,
+  RiseOutlined,
+  ArrowRightOutlined,
+} from '@ant-design/icons';
+
+const { Title, Paragraph } = Typography;
 
 const dashboardCards = [
   {
-    icon: Article,
+    icon: <FileTextOutlined style={{ fontSize: 28 }} />,
     title: 'Articles',
     description: 'View and manage your published articles',
     link: '/articles',
-    color: '#1976d2',
+    color: '#1677ff',
   },
   {
-    icon: Edit,
+    icon: <EditOutlined style={{ fontSize: 28 }} />,
     title: 'Editor',
     description: 'Create and edit content with SEO optimization',
     link: '/editor',
-    color: '#9c27b0',
+    color: '#722ed1',
   },
   {
-    icon: Add,
+    icon: <PlusOutlined style={{ fontSize: 28 }} />,
     title: 'Generate',
     description: 'Generate new AI-powered content',
     link: '/generate',
-    color: '#2e7d32',
+    color: '#52c41a',
   },
   {
-    icon: Analytics,
+    icon: <ToolOutlined style={{ fontSize: 28 }} />,
     title: 'Tools',
     description: 'Access SEO tools and utilities',
     link: '/tools',
-    color: '#ed6c02',
+    color: '#fa8c16',
   },
   {
-    icon: Settings,
+    icon: <SettingOutlined style={{ fontSize: 28 }} />,
     title: 'Settings',
     description: 'Configure your preferences',
     link: '/settings',
-    color: '#0288d1',
+    color: '#13c2c2',
   },
 ];
 
 export default function DashboardPage() {
   return (
-    <Box sx={{ py: { xs: 4, md: 6 } }}>
-      <Container maxWidth="lg">
+    <div style={{ padding: '32px 24px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* Header */}
-        <Box sx={{ mb: 6 }}>
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 700,
-              mb: 2,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              backgroundClip: 'text',
+        <div style={{ marginBottom: 48 }}>
+          <Title
+            level={2}
+            style={{
+              marginBottom: 8,
+              background: 'linear-gradient(135deg, #1677ff 0%, #722ed1 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
             Dashboard
-          </Typography>
-          <Typography variant="h6" color="text.secondary">
+          </Title>
+          <Paragraph type="secondary" style={{ fontSize: 16 }}>
             Welcome to your content creation workspace
-          </Typography>
-        </Box>
+          </Paragraph>
+        </div>
 
         {/* Quick Stats */}
-        <Grid container spacing={3} sx={{ mb: 6 }}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card
-              elevation={0}
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                height: '100%',
-              }}
-            >
-              <CardContent>
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Articles
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    0
-                  </Typography>
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <TrendingUp sx={{ fontSize: 16, color: 'success.main' }} />
-                    <Typography variant="caption" color="success.main">
-                      Ready to create
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </CardContent>
+        <Row gutter={[24, 24]} style={{ marginBottom: 48 }}>
+          <Col xs={24} sm={12} md={6}>
+            <Card>
+              <Statistic
+                title="Total Articles"
+                value={0}
+                suffix={
+                  <Space style={{ marginLeft: 8 }}>
+                    <RiseOutlined style={{ color: '#52c41a', fontSize: 14 }} />
+                    <span style={{ color: '#52c41a', fontSize: 12 }}>Ready to create</span>
+                  </Space>
+                }
+              />
             </Card>
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card
-              elevation={0}
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                height: '100%',
-              }}
-            >
-              <CardContent>
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Drafts
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    0
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    No drafts yet
-                  </Typography>
-                </Stack>
-              </CardContent>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Card>
+              <Statistic title="Drafts" value={0} />
+              <Paragraph type="secondary" style={{ fontSize: 12, margin: 0 }}>
+                No drafts yet
+              </Paragraph>
             </Card>
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card
-              elevation={0}
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                height: '100%',
-              }}
-            >
-              <CardContent>
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    SEO Score
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    -
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Create content to see stats
-                  </Typography>
-                </Stack>
-              </CardContent>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Card>
+              <Statistic title="SEO Score" value="-" />
+              <Paragraph type="secondary" style={{ fontSize: 12, margin: 0 }}>
+                Create content to see stats
+              </Paragraph>
             </Card>
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card
-              elevation={0}
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                height: '100%',
-              }}
-            >
-              <CardContent>
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Last Updated
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    -
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Never
-                  </Typography>
-                </Stack>
-              </CardContent>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Card>
+              <Statistic title="Last Updated" value="-" />
+              <Paragraph type="secondary" style={{ fontSize: 12, margin: 0 }}>
+                Never
+              </Paragraph>
             </Card>
-          </Grid>
-        </Grid>
+          </Col>
+        </Row>
 
         {/* Quick Actions */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" fontWeight={600} sx={{ mb: 3 }}>
+        <div style={{ marginBottom: 48 }}>
+          <Title level={4} style={{ marginBottom: 24 }}>
             Quick Actions
-          </Typography>
-          <Grid container spacing={3}>
-            {dashboardCards.map((card, index) => {
-              const Icon = card.icon;
-              return (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+          </Title>
+          <Row gutter={[24, 24]}>
+            {dashboardCards.map((card, index) => (
+              <Col xs={24} sm={12} md={8} key={index}>
+                <Link href={card.link} style={{ textDecoration: 'none' }}>
                   <Card
-                    elevation={0}
-                    sx={{
+                    hoverable
+                    style={{
                       height: '100%',
-                      border: '1px solid',
-                      borderColor: 'divider',
+                      borderRadius: 12,
                       transition: 'all 0.3s ease',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
-                        borderColor: card.color,
-                      },
                     }}
-                    component={Link}
-                    href={card.link}
-                    style={{ textDecoration: 'none' }}
                   >
-                    <CardContent sx={{ p: 3 }}>
-                      <Box
-                        sx={{
-                          width: 56,
-                          height: 56,
-                          borderRadius: 3,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor: `${card.color}15`,
-                          mb: 2,
-                        }}
-                      >
-                        <Icon sx={{ fontSize: 28, color: card.color }} />
-                      </Box>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
-                        {card.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {card.description}
-                      </Typography>
-                    </CardContent>
+                    <div
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 12,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: `${card.color}15`,
+                        color: card.color,
+                        marginBottom: 16,
+                      }}
+                    >
+                      {card.icon}
+                    </div>
+                    <Title level={5} style={{ marginBottom: 8 }}>
+                      {card.title}
+                    </Title>
+                    <Paragraph type="secondary" style={{ margin: 0 }}>
+                      {card.description}
+                    </Paragraph>
                   </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box>
+                </Link>
+              </Col>
+            ))}
+          </Row>
+        </div>
 
         {/* Get Started Section */}
         <Card
-          elevation={0}
-          sx={{
-            background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
+          style={{
+            background: 'linear-gradient(135deg, #e6f4ff 0%, #f9f0ff 100%)',
             border: 'none',
+            borderRadius: 16,
             textAlign: 'center',
-            p: { xs: 4, md: 6 },
+            padding: '24px',
           }}
         >
-          <Typography variant="h4" fontWeight={700} gutterBottom>
+          <Title level={3} style={{ marginBottom: 16 }}>
             Ready to create amazing content?
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}
+          </Title>
+          <Paragraph
+            type="secondary"
+            style={{ maxWidth: 600, margin: '0 auto 24px' }}
           >
             Start generating SEO-optimized articles with AI assistance. Choose a
             template or create from scratch.
-          </Typography>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            justifyContent="center"
-          >
-            <Button
-              component={Link}
-              href="/generate"
-              variant="contained"
-              size="large"
-              sx={{
-                px: 4,
-                py: 1.5,
-                fontWeight: 600,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #5568d3 0%, #6a3f91 100%)',
-                },
-              }}
-            >
-              Generate Article
-            </Button>
-            <Button
-              component={Link}
-              href="/editor"
-              variant="outlined"
-              size="large"
-              sx={{
-                px: 4,
-                py: 1.5,
-                fontWeight: 600,
-                borderColor: '#667eea',
-                color: '#667eea',
-                '&:hover': {
-                  borderColor: '#5568d3',
-                  backgroundColor: 'rgba(102, 126, 234, 0.04)',
-                },
-              }}
-            >
-              Open Editor
-            </Button>
-          </Stack>
+          </Paragraph>
+          <Space size="middle" wrap style={{ justifyContent: 'center' }}>
+            <Link href="/generate">
+              <Button
+                type="primary"
+                size="large"
+                icon={<ArrowRightOutlined />}
+                style={{
+                  background: 'linear-gradient(135deg, #1677ff 0%, #722ed1 100%)',
+                  border: 'none',
+                }}
+              >
+                Generate Article
+              </Button>
+            </Link>
+            <Link href="/editor">
+              <Button size="large">Open Editor</Button>
+            </Link>
+          </Space>
         </Card>
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 }

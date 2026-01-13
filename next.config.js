@@ -1,7 +1,29 @@
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
+    },
+  ],
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+
+  // Transpile antd for proper SSR
+  transpilePackages: ['antd', '@ant-design/icons', '@ant-design/nextjs-registry'],
 
   // PWA support
   async headers() {
@@ -31,9 +53,6 @@ const nextConfig = {
     ],
   },
 
-  // Output for static export if needed
-  // output: 'export', // Uncomment for static export
-
   // Environment variables
   env: {
     SITE_URL: process.env.SITE_URL || 'http://localhost:3000',
@@ -53,4 +72,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withPWA(nextConfig);

@@ -2,60 +2,65 @@
 
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { Layout, Typography } from 'antd';
 import NavigationBar from '@/components/NavigationBar';
 import { AuthProvider, useAuth } from '@/components/AuthProvider';
+import { useTheme } from '@/contexts/ThemeContext';
 import config from '@/lib/config';
+
+const { Content, Footer } = Layout;
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  
-  // 从 useAuth 获取完整状态，包括是否有密码(hasPassword)和加载状态(loading)
-  const { isAuthenticated, hasPassword, loading } = useAuth();
+  const { theme } = useTheme();
 
-  // 不显示导航栏的页面
+  const { isAuthenticated, loading } = useAuth();
+
   const hideNavbar = pathname === '/login';
 
-  // 核心逻辑：路由保护
-  // 所有页面都需要登录，未登录用户强制跳转到登录页
   useEffect(() => {
     if (loading) {
       return;
     }
 
-    // 如果未登录且不在登录页，重定向到登录页
     if (!isAuthenticated && pathname !== '/login') {
       router.replace('/login');
     }
   }, [isAuthenticated, loading, pathname, router]);
 
-  // 防止未授权内容闪烁（Flash of Unauthenticated Content）
-  // 在重定向发生前，暂时不渲染页面内容
   if (!isAuthenticated && pathname !== '/login') {
     return null;
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* 仅在非隐藏页面且已登录状态下显示导航栏 */}
+    <Layout style={{ minHeight: '100vh' }}>
       {!hideNavbar && isAuthenticated && <NavigationBar />}
-      <main style={{ flex: 1 }}>
+      <Content
+        style={{
+          flex: 1,
+          background: theme === 'dark' ? '#000' : '#f5f5f5',
+        }}
+      >
         {children}
-      </main>
-      <footer style={{
-        borderTop: '1px solid #e0e0e0',
-        padding: '24px',
-        textAlign: 'center',
-        backgroundColor: '#fafafa',
-      }}>
-        <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+      </Content>
+      <Footer
+        style={{
+          textAlign: 'center',
+          background: theme === 'dark' ? '#141414' : '#fafafa',
+          borderTop: `1px solid ${theme === 'dark' ? '#303030' : '#e8e8e8'}`,
+          padding: '24px 50px',
+        }}
+      >
+        <Typography.Text type="secondary">
           &copy; {new Date().getFullYear()} {config.site.name}. All rights reserved.
-        </p>
-        <p style={{ margin: '8px 0 0', color: '#888', fontSize: '12px' }}>
+        </Typography.Text>
+        <br />
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
           AI驱动的SEO博客生成系统
-        </p>
-      </footer>
-    </div>
+        </Typography.Text>
+      </Footer>
+    </Layout>
   );
 }
 

@@ -1,86 +1,85 @@
 'use client';
 
-import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
+import { ConfigProvider, theme as antdTheme, App } from 'antd';
+import { AntdRegistry } from '@ant-design/nextjs-registry';
+import zhCN from 'antd/locale/zh_CN';
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
-    },
-    secondary: {
-      main: '#9c27b0',
-      light: '#ba68c8',
-      dark: '#7b1fa2',
-    },
-    background: {
-      default: '#fafafa',
-      paper: '#ffffff',
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontSize: '2.5rem',
-      fontWeight: 700,
-    },
-    h2: {
-      fontSize: '2rem',
-      fontWeight: 600,
-    },
-    h3: {
-      fontSize: '1.5rem',
-      fontWeight: 600,
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          fontWeight: 600,
+// 蓝色主题配置
+const primaryColor = '#1677ff';
+
+function AntdConfigProvider({ children }: { children: ReactNode }) {
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // 避免服务端渲染时的主题闪烁
+  if (!mounted) {
+    return (
+      <ConfigProvider
+        locale={zhCN}
+        theme={{
+          token: {
+            colorPrimary: primaryColor,
+            borderRadius: 8,
+            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          },
+          algorithm: antdTheme.defaultAlgorithm,
+        }}
+      >
+        <App>{children}</App>
+      </ConfigProvider>
+    );
+  }
+
+  return (
+    <ConfigProvider
+      locale={zhCN}
+      theme={{
+        token: {
+          colorPrimary: primaryColor,
+          colorSuccess: '#52c41a',
+          colorWarning: '#faad14',
+          colorError: '#ff4d4f',
+          colorInfo: primaryColor,
           borderRadius: 8,
+          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-        },
-      },
-    },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
+        algorithm: theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        components: {
+          Button: {
+            fontWeight: 500,
+          },
+          Card: {
+            borderRadiusLG: 12,
+          },
+          Menu: {
+            itemBorderRadius: 8,
+          },
+          Input: {
+            borderRadius: 8,
+          },
+          Select: {
             borderRadius: 8,
           },
         },
-      },
-    },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-        },
-      },
-    },
-  },
-});
+      }}
+    >
+      <App>{children}</App>
+    </ConfigProvider>
+  );
+}
 
 export default function ThemeRegistry({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
+    <ThemeProvider>
+      <AntdRegistry>
+        <AntdConfigProvider>{children}</AntdConfigProvider>
+      </AntdRegistry>
     </ThemeProvider>
   );
 }

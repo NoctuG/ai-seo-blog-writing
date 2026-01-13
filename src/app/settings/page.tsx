@@ -1,34 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  Container,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Box,
-  Typography,
-  Divider,
-  Alert,
-  Snackbar,
-  IconButton,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Grid,
-} from '@mui/material';
-import {
-  Visibility,
-  VisibilityOff,
-  Save,
-  Settings as SettingsIcon,
-} from '@mui/icons-material';
+import { Typography, Card, Input, Button, Form, Select, Divider, message, Row, Col, Space } from 'antd';
+import { SettingOutlined, SaveOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+
+const { Title, Paragraph } = Typography;
 
 interface SettingsData {
-  // AI Settings
   anthropicApiKey: string;
   anthropicBaseUrl: string;
   openaiApiKey: string;
@@ -37,54 +15,21 @@ interface SettingsData {
 }
 
 export default function SettingsPage() {
+  const [form] = Form.useForm();
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
-
-  const [settings, setSettings] = useState<SettingsData>({
-    anthropicApiKey: '',
-    anthropicBaseUrl: '',
-    openaiApiKey: '',
-    openaiBaseUrl: '',
-    defaultAiService: 'claude',
-  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Load saved settings from localStorage
     const savedSettings = localStorage.getItem('appSettings');
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
-        setSettings(prev => ({
-          ...prev,
-          ...parsed,
-        }));
-      } catch (e) {
+        form.setFieldsValue(parsed);
+      } catch {
         console.error('Failed to parse saved settings');
       }
     }
-  }, []);
-
-  const handleInputChange = (field: keyof SettingsData) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setSettings(prev => ({
-      ...prev,
-      [field]: event.target.value,
-    }));
-  };
-
-  const handleSelectChange = (field: keyof SettingsData) => (
-    event: any
-  ) => {
-    setSettings(prev => ({
-      ...prev,
-      [field]: event.target.value,
-    }));
-  };
+  }, [form]);
 
   const togglePasswordVisibility = (field: string) => {
     setShowPassword(prev => ({
@@ -93,189 +38,138 @@ export default function SettingsPage() {
     }));
   };
 
-  const saveApiSettings = async () => {
+  const saveApiSettings = async (values: SettingsData) => {
+    setLoading(true);
     try {
-      const apiSettings = {
-        anthropicApiKey: settings.anthropicApiKey,
-        anthropicBaseUrl: settings.anthropicBaseUrl,
-        openaiApiKey: settings.openaiApiKey,
-        openaiBaseUrl: settings.openaiBaseUrl,
-        defaultAiService: settings.defaultAiService,
-      };
+      localStorage.setItem('appSettings', JSON.stringify(values));
 
-      localStorage.setItem('appSettings', JSON.stringify(apiSettings));
-
-      // Also save to server-side config via API
       const response = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'api', ...apiSettings }),
+        body: JSON.stringify({ type: 'api', ...values }),
       });
 
       if (response.ok) {
-        setSnackbar({
-          open: true,
-          message: 'API 设置已保存',
-          severity: 'success',
-        });
+        message.success('API 设置已保存');
       } else {
         throw new Error('Failed to save settings');
       }
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: '保存设置失败',
-        severity: 'error',
-      });
+    } catch {
+      message.error('保存设置失败');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <SettingsIcon sx={{ fontSize: 32, mr: 2, color: 'primary.main' }} />
-        <Typography variant="h4" component="h1" fontWeight={700}>
-          系统设置
-        </Typography>
-      </Box>
+    <div style={{ padding: '32px 24px' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto' }}>
+        <Space align="center" style={{ marginBottom: 32 }}>
+          <SettingOutlined style={{ fontSize: 32, color: '#1677ff' }} />
+          <Title level={2} style={{ margin: 0 }}>
+            系统设置
+          </Title>
+        </Space>
 
-      <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-        <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom fontWeight={600}>
-            AI 服务配置
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Card>
+          <Title level={4}>AI 服务配置</Title>
+          <Paragraph type="secondary" style={{ marginBottom: 24 }}>
             配置 Claude 和 OpenAI API 密钥及自定义端点
-          </Typography>
+          </Paragraph>
 
-          <Grid container spacing={3}>
-            <Grid size={12}>
-              <FormControl fullWidth>
-                <InputLabel>默认 AI 服务</InputLabel>
-                <Select
-                  value={settings.defaultAiService}
-                  label="默认 AI 服务"
-                  onChange={handleSelectChange('defaultAiService')}
-                >
-                  <MenuItem value="claude">Claude (Anthropic)</MenuItem>
-                  <MenuItem value="openai">OpenAI (GPT)</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={saveApiSettings}
+            initialValues={{
+              defaultAiService: 'claude',
+              anthropicApiKey: '',
+              anthropicBaseUrl: '',
+              openaiApiKey: '',
+              openaiBaseUrl: '',
+            }}
+          >
+            <Form.Item label="默认 AI 服务" name="defaultAiService">
+              <Select>
+                <Select.Option value="claude">Claude (Anthropic)</Select.Option>
+                <Select.Option value="openai">OpenAI (GPT)</Select.Option>
+              </Select>
+            </Form.Item>
 
-            <Grid size={12}>
-              <Divider sx={{ my: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Claude (Anthropic)
-                </Typography>
-              </Divider>
-            </Grid>
+            <Divider>Claude (Anthropic)</Divider>
 
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="Anthropic API Key"
-                type={showPassword['anthropicApiKey'] ? 'text' : 'password'}
-                value={settings.anthropicApiKey}
-                onChange={handleInputChange('anthropicApiKey')}
-                placeholder="sk-ant-..."
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
+            <Row gutter={16}>
+              <Col xs={24}>
+                <Form.Item label="Anthropic API Key" name="anthropicApiKey">
+                  <Input
+                    placeholder="sk-ant-..."
+                    type={showPassword['anthropicApiKey'] ? 'text' : 'password'}
+                    suffix={
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={showPassword['anthropicApiKey'] ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                         onClick={() => togglePasswordVisibility('anthropicApiKey')}
-                        edge="end"
-                      >
-                        {showPassword['anthropicApiKey'] ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="Anthropic Base URL (可选)"
-                value={settings.anthropicBaseUrl}
-                onChange={handleInputChange('anthropicBaseUrl')}
-                placeholder="https://api.anthropic.com"
-                helperText="留空使用官方 API 端点，或输入自定义端点地址"
-              />
-            </Grid>
-
-            <Grid size={12}>
-              <Divider sx={{ my: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  OpenAI
-                </Typography>
-              </Divider>
-            </Grid>
-
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="OpenAI API Key"
-                type={showPassword['openaiApiKey'] ? 'text' : 'password'}
-                value={settings.openaiApiKey}
-                onChange={handleInputChange('openaiApiKey')}
-                placeholder="sk-..."
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => togglePasswordVisibility('openaiApiKey')}
-                        edge="end"
-                      >
-                        {showPassword['openaiApiKey'] ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="OpenAI Base URL (可选)"
-                value={settings.openaiBaseUrl}
-                onChange={handleInputChange('openaiBaseUrl')}
-                placeholder="https://api.openai.com/v1"
-                helperText="留空使用官方 API 端点，或输入自定义端点地址 (如兼容 API)"
-              />
-            </Grid>
-
-            <Grid size={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={saveApiSettings}
-                  size="large"
+                      />
+                    }
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24}>
+                <Form.Item
+                  label="Anthropic Base URL (可选)"
+                  name="anthropicBaseUrl"
+                  extra="留空使用官方 API 端点，或输入自定义端点地址"
                 >
-                  保存 API 设置
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+                  <Input placeholder="https://api.anthropic.com" />
+                </Form.Item>
+              </Col>
+            </Row>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-      >
-        <Alert
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+            <Divider>OpenAI</Divider>
+
+            <Row gutter={16}>
+              <Col xs={24}>
+                <Form.Item label="OpenAI API Key" name="openaiApiKey">
+                  <Input
+                    placeholder="sk-..."
+                    type={showPassword['openaiApiKey'] ? 'text' : 'password'}
+                    suffix={
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={showPassword['openaiApiKey'] ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                        onClick={() => togglePasswordVisibility('openaiApiKey')}
+                      />
+                    }
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24}>
+                <Form.Item
+                  label="OpenAI Base URL (可选)"
+                  name="openaiBaseUrl"
+                  extra="留空使用官方 API 端点，或输入自定义端点地址 (如兼容 API)"
+                >
+                  <Input placeholder="https://api.openai.com/v1" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <div style={{ textAlign: 'right', marginTop: 24 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                icon={<SaveOutlined />}
+                loading={loading}
+              >
+                保存 API 设置
+              </Button>
+            </div>
+          </Form>
+        </Card>
+      </div>
+    </div>
   );
 }

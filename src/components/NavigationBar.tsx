@@ -1,202 +1,158 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Layout, Menu, Button, Drawer, Space, Switch, Typography, Grid } from 'antd';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Box,
-  useMediaQuery,
-  useTheme,
-  Container,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Home,
-  Create,
-  Article,
-  Build,
-  Settings,
-  AutoAwesome,
-} from '@mui/icons-material';
+  HomeOutlined,
+  EditOutlined,
+  FileTextOutlined,
+  ToolOutlined,
+  SettingOutlined,
+  MenuOutlined,
+  BulbOutlined,
+  BulbFilled,
+  RocketOutlined,
+} from '@ant-design/icons';
+import { useTheme } from '@/contexts/ThemeContext';
+
+const { Header } = Layout;
+const { useBreakpoint } = Grid;
 
 const navItems = [
-  { label: '仪表盘', href: '/dash', icon: Home },
-  { label: '生成文章', href: '/generate', icon: Create },
-  { label: '文章列表', href: '/articles', icon: Article },
-  { label: 'SEO工具', href: '/tools', icon: Build },
-  { label: '设置', href: '/settings', icon: Settings },
+  { label: '仪表盘', href: '/dash', icon: <HomeOutlined /> },
+  { label: '生成文章', href: '/generate', icon: <EditOutlined /> },
+  { label: '文章列表', href: '/articles', icon: <FileTextOutlined /> },
+  { label: 'SEO工具', href: '/tools', icon: <ToolOutlined /> },
+  { label: '设置', href: '/settings', icon: <SettingOutlined /> },
 ];
 
 export default function NavigationBar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { theme, toggleTheme } = useTheme();
+  const screens = useBreakpoint();
 
-  const toggleDrawer = (open: boolean) => () => {
-    setDrawerOpen(open);
-  };
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isMobile = !screens.md;
 
   const isActive = (href: string) => {
     if (!pathname) return false;
-    // 对于顶级导航项进行精确匹配或前缀匹配
     if (href === '/dash') {
       return pathname === '/dash' || pathname.startsWith('/dash/');
     }
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const getSelectedKeys = () => {
+    const active = navItems.find(item => isActive(item.href));
+    return active ? [active.href] : [];
+  };
+
+  const menuItems = navItems.map(item => ({
+    key: item.href,
+    icon: item.icon,
+    label: <Link href={item.href}>{item.label}</Link>,
+  }));
+
+  const ThemeSwitch = () => (
+    <Switch
+      checked={theme === 'dark'}
+      onChange={toggleTheme}
+      checkedChildren={<BulbFilled />}
+      unCheckedChildren={<BulbOutlined />}
+    />
+  );
+
   return (
     <>
-      <AppBar
-        position="sticky"
-        color="inherit"
-        elevation={0}
-        sx={{
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          backgroundColor: 'background.paper',
+      <Header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          background: theme === 'dark' ? '#141414' : '#fff',
+          borderBottom: `1px solid ${theme === 'dark' ? '#303030' : '#f0f0f0'}`,
+          height: 64,
         }}
       >
-        <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ minHeight: 64 }}>
-            {/* Logo */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mr: 3 }}>
-              <AutoAwesome sx={{ color: 'primary.main', mr: 1, fontSize: 28 }} />
-              <Typography
-                variant="h6"
-                component={Link}
-                href="/dash"
-                sx={{
-                  fontWeight: 700,
-                  color: 'text.primary',
-                  textDecoration: 'none',
-                  '&:hover': {
-                    color: 'primary.main',
-                  },
-                }}
-              >
-                AI SEO Blog
-              </Typography>
-            </Box>
+        {/* Logo */}
+        <Link href="/dash" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+          <RocketOutlined style={{ fontSize: 24, color: '#1677ff' }} />
+          <Typography.Title
+            level={4}
+            style={{
+              margin: 0,
+              background: 'linear-gradient(135deg, #1677ff 0%, #722ed1 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontWeight: 700,
+            }}
+          >
+            AI SEO Blog
+          </Typography.Title>
+        </Link>
 
-            {/* Desktop Navigation */}
-            {!isMobile && (
-              <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1 }}>
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.href);
-                  return (
-                    <Button
-                      key={item.href}
-                      component={Link}
-                      href={item.href}
-                      startIcon={<Icon />}
-                      sx={{
-                        color: active ? 'primary.main' : 'text.secondary',
-                        fontWeight: active ? 600 : 500,
-                        backgroundColor: active ? 'primary.50' : 'transparent',
-                        '&:hover': {
-                          backgroundColor: active ? 'primary.100' : 'action.hover',
-                        },
-                        px: 2,
-                        py: 1,
-                        borderRadius: 2,
-                      }}
-                    >
-                      {item.label}
-                    </Button>
-                  );
-                })}
-              </Box>
-            )}
+        {/* Desktop Navigation */}
+        {mounted && !isMobile && (
+          <Space size="middle">
+            <Menu
+              mode="horizontal"
+              selectedKeys={getSelectedKeys()}
+              items={menuItems}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                minWidth: 500,
+              }}
+            />
+            <ThemeSwitch />
+          </Space>
+        )}
 
-            {/* Mobile Menu Button */}
-            {isMobile && (
-              <>
-                <Box sx={{ flexGrow: 1 }} />
-                <IconButton
-                  edge="end"
-                  color="inherit"
-                  aria-label="menu"
-                  onClick={toggleDrawer(true)}
-                >
-                  <MenuIcon />
-                </IconButton>
-              </>
-            )}
-          </Toolbar>
-        </Container>
-      </AppBar>
+        {/* Mobile Menu Button */}
+        {mounted && isMobile && (
+          <Space>
+            <ThemeSwitch />
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={() => setDrawerOpen(true)}
+            />
+          </Space>
+        )}
+      </Header>
 
       {/* Mobile Drawer */}
       <Drawer
-        anchor="right"
+        title={
+          <Space>
+            <RocketOutlined style={{ fontSize: 20, color: '#1677ff' }} />
+            <span style={{ fontWeight: 700 }}>AI SEO Blog</span>
+          </Space>
+        }
+        placement="right"
+        onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
-        onClose={toggleDrawer(false)}
-        PaperProps={{
-          sx: {
-            width: 280,
-            borderTopLeftRadius: 16,
-            borderBottomLeftRadius: 16,
-          },
-        }}
+        width={280}
       >
-        <Box sx={{ pt: 2, pb: 1, px: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <AutoAwesome sx={{ color: 'primary.main', mr: 1 }} />
-            <Typography variant="h6" fontWeight={700}>
-              AI SEO Blog
-            </Typography>
-          </Box>
-        </Box>
-        <List sx={{ px: 1 }}>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
-            return (
-              <ListItem key={item.href} disablePadding sx={{ mb: 0.5 }}>
-                <ListItemButton
-                  component={Link}
-                  href={item.href}
-                  onClick={toggleDrawer(false)}
-                  selected={active}
-                  sx={{
-                    borderRadius: 2,
-                    '&.Mui-selected': {
-                      backgroundColor: 'primary.50',
-                      '&:hover': {
-                        backgroundColor: 'primary.100',
-                      },
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 40 }}>
-                    <Icon color={active ? 'primary' : 'inherit'} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{
-                      fontWeight: active ? 600 : 500,
-                      color: active ? 'primary.main' : 'text.primary',
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
+        <Menu
+          mode="vertical"
+          selectedKeys={getSelectedKeys()}
+          items={menuItems}
+          onClick={() => setDrawerOpen(false)}
+          style={{ border: 'none' }}
+        />
       </Drawer>
     </>
   );

@@ -1,9 +1,40 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import {
+  Form,
+  Input,
+  Select,
+  Button,
+  Tag,
+  Space,
+  Card,
+  Checkbox,
+  Row,
+  Col,
+  Alert,
+  Result,
+  Spin,
+  Typography,
+  Divider,
+} from 'antd';
+import {
+  PlusOutlined,
+  CloseOutlined,
+  SendOutlined,
+  GlobalOutlined,
+  TwitterOutlined,
+  FacebookOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import { ContentGenerationRequest } from '@/types';
 
+const { TextArea } = Input;
+const { Title, Text } = Typography;
+
 export default function ArticleGenerator() {
+  const [form] = Form.useForm();
   const [formData, setFormData] = useState<ContentGenerationRequest>({
     topic: '',
     keywords: [],
@@ -38,9 +69,6 @@ export default function ArticleGenerator() {
   });
 
   const [keywordInput, setKeywordInput] = useState('');
-  const [cmsTagsInput, setCmsTagsInput] = useState('');
-  const [twitterHashtagsInput, setTwitterHashtagsInput] = useState('');
-  const [facebookHashtagsInput, setFacebookHashtagsInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
@@ -62,60 +90,7 @@ export default function ArticleGenerator() {
     });
   };
 
-  const updateCmsTags = (value: string) => {
-    setCmsTagsInput(value);
-    const tags = value
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(Boolean);
-    setFormData({
-      ...formData,
-      cms: {
-        provider: 'wordpress',
-        ...formData.cms,
-        defaultTags: tags,
-      },
-    });
-  };
-
-  const updateTwitterHashtags = (value: string) => {
-    setTwitterHashtagsInput(value);
-    const hashtags = value
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(Boolean);
-    setFormData({
-      ...formData,
-      social: {
-        ...formData.social,
-        twitter: {
-          ...formData.social?.twitter,
-          hashtags,
-        },
-      },
-    });
-  };
-
-  const updateFacebookHashtags = (value: string) => {
-    setFacebookHashtagsInput(value);
-    const hashtags = value
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(Boolean);
-    setFormData({
-      ...formData,
-      social: {
-        ...formData.social,
-        facebook: {
-          ...formData.social?.facebook,
-          hashtags,
-        },
-      },
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
     setError('');
     setResult(null);
@@ -141,406 +116,392 @@ export default function ArticleGenerator() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={formData}
+      >
         {/* Topic */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            文章主题 *
-          </label>
-          <input
-            type="text"
-            required
+        <Form.Item
+          label="文章主题"
+          required
+          rules={[{ required: true, message: '请输入文章主题' }]}
+        >
+          <Input
+            size="large"
             value={formData.topic}
             onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-            className="input"
             placeholder="例如：人工智能在内容营销中的应用"
           />
-        </div>
+        </Form.Item>
 
         {/* Keywords */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            目标关键词 *
-          </label>
-          <div className="flex gap-2 mb-2">
-            <input
-              type="text"
+        <Form.Item label="目标关键词" required>
+          <Space.Compact style={{ width: '100%' }}>
+            <Input
+              size="large"
               value={keywordInput}
               onChange={(e) => setKeywordInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddKeyword())}
-              className="input"
+              onPressEnter={(e) => {
+                e.preventDefault();
+                handleAddKeyword();
+              }}
               placeholder="输入关键词后按回车添加"
+              style={{ flex: 1 }}
             />
-            <button
-              type="button"
-              onClick={handleAddKeyword}
-              className="btn btn-secondary"
-            >
+            <Button size="large" icon={<PlusOutlined />} onClick={handleAddKeyword}>
               添加
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
+            </Button>
+          </Space.Compact>
+          <div style={{ marginTop: 12 }}>
             {formData.keywords.map((keyword) => (
-              <span key={keyword} className="badge badge-blue flex items-center gap-1">
+              <Tag
+                key={keyword}
+                color="blue"
+                closable
+                onClose={() => handleRemoveKeyword(keyword)}
+                style={{ marginBottom: 8 }}
+              >
                 {keyword}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveKeyword(keyword)}
-                  className="ml-1 hover:text-red-600"
-                >
-                  ×
-                </button>
-              </span>
+              </Tag>
             ))}
           </div>
-        </div>
+        </Form.Item>
 
         {/* Target Audience */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            目标受众
-          </label>
-          <input
-            type="text"
+        <Form.Item label="目标受众">
+          <Input
+            size="large"
             value={formData.targetAudience}
             onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
-            className="input"
             placeholder="例如：数字营销人员、内容创作者"
           />
-        </div>
+        </Form.Item>
 
-        {/* Tone */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            语言风格
-          </label>
-          <select
-            value={formData.tone}
-            onChange={(e) => setFormData({ ...formData, tone: e.target.value as any })}
-            className="input"
-          >
-            <option value="professional">专业</option>
-            <option value="casual">轻松</option>
-            <option value="technical">技术性</option>
-            <option value="friendly">友好</option>
-          </select>
-        </div>
-
-        {/* Length */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            文章长度
-          </label>
-          <select
-            value={formData.length}
-            onChange={(e) => setFormData({ ...formData, length: e.target.value as any })}
-            className="input"
-          >
-            <option value="short">短篇 (约800字)</option>
-            <option value="medium">中篇 (约1500字)</option>
-            <option value="long">长篇 (约2500字)</option>
-          </select>
-        </div>
+        <Row gutter={24}>
+          <Col xs={24} md={12}>
+            <Form.Item label="语言风格">
+              <Select
+                size="large"
+                value={formData.tone}
+                onChange={(value) => setFormData({ ...formData, tone: value })}
+              >
+                <Select.Option value="professional">专业</Select.Option>
+                <Select.Option value="casual">轻松</Select.Option>
+                <Select.Option value="technical">技术性</Select.Option>
+                <Select.Option value="friendly">友好</Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item label="文章长度">
+              <Select
+                size="large"
+                value={formData.length}
+                onChange={(value) => setFormData({ ...formData, length: value })}
+              >
+                <Select.Option value="short">短篇 (约800字)</Select.Option>
+                <Select.Option value="medium">中篇 (约1500字)</Select.Option>
+                <Select.Option value="long">长篇 (约2500字)</Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
 
         {/* Options */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
+        <Form.Item label="生成选项">
+          <Space direction="vertical">
+            <Checkbox
               checked={formData.includeImages}
               onChange={(e) => setFormData({ ...formData, includeImages: e.target.checked })}
-            />
-            <span className="text-sm">生成配图建议</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            >
+              生成配图建议
+            </Checkbox>
+            <Checkbox
               checked={formData.includeFacts}
               onChange={(e) => setFormData({ ...formData, includeFacts: e.target.checked })}
-            />
-            <span className="text-sm">嵌入事实和证据</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            >
+              嵌入事实和证据
+            </Checkbox>
+            <Checkbox
               checked={formData.connectToWeb}
               onChange={(e) => setFormData({ ...formData, connectToWeb: e.target.checked })}
-            />
-            <span className="text-sm">Connect to Web</span>
-          </label>
-        </div>
+            >
+              <Space>
+                <GlobalOutlined />
+                Connect to Web (联网搜索最新信息)
+              </Space>
+            </Checkbox>
+          </Space>
+        </Form.Item>
 
         {/* CMS Config */}
-        <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-          <h4 className="text-sm font-semibold text-gray-700">CMS 配置（WordPress）</h4>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              站点地址
-            </label>
-            <input
-              type="url"
+        <Card
+          title="CMS 配置（WordPress）"
+          size="small"
+          style={{ marginBottom: 24 }}
+        >
+          <Form.Item label="站点地址">
+            <Input
               value={formData.cms?.siteUrl || ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  cms: { provider: 'wordpress', ...formData.cms, siteUrl: e.target.value },
+                })
+              }
+              placeholder="https://example.com"
+            />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col xs={24} md={12}>
+              <Form.Item label="用户名">
+                <Input
+                  value={formData.cms?.username || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      cms: { provider: 'wordpress', ...formData.cms, username: e.target.value },
+                    })
+                  }
+                  placeholder="wordpress-user"
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item label="Application Password">
+                <Input.Password
+                  value={formData.cms?.applicationPassword || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      cms: { provider: 'wordpress', ...formData.cms, applicationPassword: e.target.value },
+                    })
+                  }
+                  placeholder="xxxx xxxx xxxx xxxx"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} md={12}>
+              <Form.Item label="默认发布状态">
+                <Select
+                  value={formData.cms?.defaultStatus || 'draft'}
+                  onChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      cms: { provider: 'wordpress', ...formData.cms, defaultStatus: value },
+                    })
+                  }
+                >
+                  <Select.Option value="draft">草稿</Select.Option>
+                  <Select.Option value="publish">发布</Select.Option>
+                  <Select.Option value="private">私有</Select.Option>
+                  <Select.Option value="pending">待审核</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item label="默认分类">
+                <Input
+                  value={formData.cms?.defaultCategory || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      cms: { provider: 'wordpress', ...formData.cms, defaultCategory: e.target.value },
+                    })
+                  }
+                  placeholder="内容营销"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item label="默认标签（逗号分隔）">
+            <Input
+              value={formData.cms?.defaultTags?.join(', ') || ''}
               onChange={(e) =>
                 setFormData({
                   ...formData,
                   cms: {
                     provider: 'wordpress',
                     ...formData.cms,
-                    siteUrl: e.target.value,
+                    defaultTags: e.target.value.split(',').map(t => t.trim()).filter(Boolean),
                   },
                 })
               }
-              className="input"
-              placeholder="https://example.com"
-            />
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                用户名
-              </label>
-              <input
-                type="text"
-                value={formData.cms?.username || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    cms: {
-                      provider: 'wordpress',
-                      ...formData.cms,
-                      username: e.target.value,
-                    },
-                  })
-                }
-                className="input"
-                placeholder="wordpress-user"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Application Password
-              </label>
-              <input
-                type="password"
-                value={formData.cms?.applicationPassword || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    cms: {
-                      provider: 'wordpress',
-                      ...formData.cms,
-                      applicationPassword: e.target.value,
-                    },
-                  })
-                }
-                className="input"
-                placeholder="xxxx xxxx xxxx xxxx"
-              />
-            </div>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                默认发布状态
-              </label>
-              <select
-                value={formData.cms?.defaultStatus || 'draft'}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    cms: {
-                      provider: 'wordpress',
-                      ...formData.cms,
-                      defaultStatus: e.target.value as any,
-                    },
-                  })
-                }
-                className="input"
-              >
-                <option value="draft">草稿</option>
-                <option value="publish">发布</option>
-                <option value="private">私有</option>
-                <option value="pending">待审核</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                默认分类
-              </label>
-              <input
-                type="text"
-                value={formData.cms?.defaultCategory || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    cms: {
-                      provider: 'wordpress',
-                      ...formData.cms,
-                      defaultCategory: e.target.value,
-                    },
-                  })
-                }
-                className="input"
-                placeholder="内容营销"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              默认标签（逗号分隔）
-            </label>
-            <input
-              type="text"
-              value={cmsTagsInput}
-              onChange={(e) => updateCmsTags(e.target.value)}
-              className="input"
               placeholder="AI, 内容营销, SEO"
             />
-          </div>
-        </div>
+          </Form.Item>
+        </Card>
 
         {/* Social Config */}
-        <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-          <h4 className="text-sm font-semibold text-gray-700">社交媒体文案配置</h4>
-          <div className="space-y-4">
-            <div className="rounded-md border border-gray-100 p-3">
-              <label className="flex items-center gap-2 text-sm font-medium">
-                <input
-                  type="checkbox"
-                  checked={formData.social?.twitter?.enabled || false}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      social: {
-                        ...formData.social,
-                        twitter: {
-                          ...formData.social?.twitter,
-                          enabled: e.target.checked,
-                        },
-                      },
-                    })
-                  }
-                />
+        <Card
+          title="社交媒体文案配置"
+          size="small"
+          style={{ marginBottom: 24 }}
+        >
+          {/* Twitter */}
+          <div style={{ marginBottom: 16 }}>
+            <Checkbox
+              checked={formData.social?.twitter?.enabled || false}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  social: {
+                    ...formData.social,
+                    twitter: { ...formData.social?.twitter, enabled: e.target.checked },
+                  },
+                })
+              }
+            >
+              <Space>
+                <TwitterOutlined />
                 Twitter
-              </label>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <input
-                  type="text"
+              </Space>
+            </Checkbox>
+            <Row gutter={16} style={{ marginTop: 12 }}>
+              <Col xs={24} md={12}>
+                <Input
                   value={formData.social?.twitter?.handle || ''}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
                       social: {
                         ...formData.social,
-                        twitter: {
-                          ...formData.social?.twitter,
-                          handle: e.target.value,
-                        },
+                        twitter: { ...formData.social?.twitter, handle: e.target.value },
                       },
                     })
                   }
-                  className="input"
                   placeholder="@brand"
                 />
-                <input
-                  type="text"
-                  value={twitterHashtagsInput}
-                  onChange={(e) => updateTwitterHashtags(e.target.value)}
-                  className="input"
-                  placeholder="话题标签（逗号分隔）"
-                />
-              </div>
-            </div>
-            <div className="rounded-md border border-gray-100 p-3">
-              <label className="flex items-center gap-2 text-sm font-medium">
-                <input
-                  type="checkbox"
-                  checked={formData.social?.facebook?.enabled || false}
+              </Col>
+              <Col xs={24} md={12}>
+                <Input
+                  value={formData.social?.twitter?.hashtags?.join(', ') || ''}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
                       social: {
                         ...formData.social,
-                        facebook: {
-                          ...formData.social?.facebook,
-                          enabled: e.target.checked,
+                        twitter: {
+                          ...formData.social?.twitter,
+                          hashtags: e.target.value.split(',').map(t => t.trim()).filter(Boolean),
                         },
                       },
                     })
                   }
+                  placeholder="话题标签（逗号分隔）"
                 />
+              </Col>
+            </Row>
+          </div>
+
+          <Divider style={{ margin: '16px 0' }} />
+
+          {/* Facebook */}
+          <div>
+            <Checkbox
+              checked={formData.social?.facebook?.enabled || false}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  social: {
+                    ...formData.social,
+                    facebook: { ...formData.social?.facebook, enabled: e.target.checked },
+                  },
+                })
+              }
+            >
+              <Space>
+                <FacebookOutlined />
                 Facebook
-              </label>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <input
-                  type="text"
+              </Space>
+            </Checkbox>
+            <Row gutter={16} style={{ marginTop: 12 }}>
+              <Col xs={24} md={12}>
+                <Input
                   value={formData.social?.facebook?.handle || ''}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
                       social: {
                         ...formData.social,
+                        facebook: { ...formData.social?.facebook, handle: e.target.value },
+                      },
+                    })
+                  }
+                  placeholder="@brand"
+                />
+              </Col>
+              <Col xs={24} md={12}>
+                <Input
+                  value={formData.social?.facebook?.hashtags?.join(', ') || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social: {
+                        ...formData.social,
                         facebook: {
                           ...formData.social?.facebook,
-                          handle: e.target.value,
+                          hashtags: e.target.value.split(',').map(t => t.trim()).filter(Boolean),
                         },
                       },
                     })
                   }
-                  className="input"
-                  placeholder="@brand"
-                />
-                <input
-                  type="text"
-                  value={facebookHashtagsInput}
-                  onChange={(e) => updateFacebookHashtags(e.target.value)}
-                  className="input"
                   placeholder="话题标签（逗号分隔）"
                 />
-              </div>
-            </div>
+              </Col>
+            </Row>
           </div>
-        </div>
+        </Card>
 
         {/* Error */}
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            {error}
-          </div>
+          <Alert
+            type="error"
+            message={error}
+            showIcon
+            style={{ marginBottom: 24 }}
+          />
         )}
 
         {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading || formData.keywords.length === 0}
-          className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="spinner"></span>
-              生成中...
-            </span>
-          ) : (
-            '生成文章'
-          )}
-        </button>
-      </form>
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="large"
+            block
+            loading={loading}
+            disabled={formData.keywords.length === 0 || !formData.topic}
+            icon={<SendOutlined />}
+          >
+            {loading ? '生成中...' : '生成文章'}
+          </Button>
+        </Form.Item>
+      </Form>
 
       {/* Result */}
       {result && (
-        <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">✅ 文章生成成功！</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            文章ID: {result.article?.id}
-          </p>
-          <a
-            href={`/articles/${result.article?.slug}`}
-            className="btn btn-primary"
-          >
-            查看文章
-          </a>
-        </div>
+        <Result
+          status="success"
+          icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
+          title="文章生成成功！"
+          subTitle={`文章ID: ${result.article?.id}`}
+          extra={[
+            <Link key="view" href={`/articles/${result.article?.slug}`}>
+              <Button type="primary" size="large">
+                查看文章
+              </Button>
+            </Link>,
+          ]}
+        />
       )}
     </div>
   );
